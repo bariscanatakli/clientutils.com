@@ -46,6 +46,9 @@ export const metadata: Metadata = {
   verification: {
     google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
   },
+  other: {
+    "google-adsense-account": "ca-pub-4322249758635992",
+  },
 };
 
 export default function RootLayout({
@@ -67,7 +70,7 @@ export default function RootLayout({
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4322249758635992"
           crossOrigin="anonymous"
-          strategy="afterInteractive"
+          strategy="beforeInteractive"
         />
         <script
           dangerouslySetInnerHTML={{

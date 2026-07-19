@@ -4,7 +4,7 @@ import { SITE_CONFIG } from '@/lib/constants/seo';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const routes: MetadataRoute.Sitemap = TOOLS.map((tool) => ({
-    url: `${SITE_CONFIG.url}${tool.href}`,
+    url: `${SITE_CONFIG.url}${tool.path}`,
     lastModified: new Date(),
     changeFrequency: 'weekly' as const,
     priority: 0.8,

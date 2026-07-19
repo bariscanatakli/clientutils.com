@@ -1,0 +1,330 @@
+@import "tailwindcss";
+
+/* ============================================
+   DESIGN SYSTEM — clientutils.com
+   Emil Kowalski design-eng + Apple design
+   Tailwind CSS v4 · @theme inline tokens
+   ============================================ */
+
+/* --- Custom easing curves (Emil: never use built-in easings) --- */
+:root {
+  /* Strong ease-out for UI entries/exits */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  /* Strong ease-in-out for on-screen movement */
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  /* iOS-like drawer/sheet curve */
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  /* Ease for hover/color changes */
+  --ease-hover: cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+/* --- Light Mode --- */
+:root {
+  --background: #fafafa;
+  --foreground: #0f0f0f;
+
+  --card: #ffffff;
+  --card-foreground: #0f0f0f;
+  --card-hover: #f5f5f5;
+
+  --sidebar: #ffffff;
+  --sidebar-foreground: #374151;
+  --sidebar-border: #e5e7eb;
+  --sidebar-hover: #f3f4f6;
+  --sidebar-active: #eef2ff;
+  --sidebar-active-text: #4f46e5;
+
+  --border: #e5e7eb;
+  --border-subtle: #f3f4f6;
+  --input: #f9fafb;
+  --input-border: #d1d5db;
+  --input-focus: #4f46e5;
+
+  --primary: #4f46e5;
+  --primary-hover: #4338ca;
+  --primary-foreground: #ffffff;
+  --primary-soft: #eef2ff;
+
+  --secondary: #06b6d4;
+  --secondary-hover: #0891b2;
+  --secondary-foreground: #ffffff;
+
+  --accent: #8b5cf6;
+  --accent-hover: #7c3aed;
+  --accent-foreground: #ffffff;
+
+  --success: #10b981;
+  --success-foreground: #ffffff;
+  --warning: #f59e0b;
+  --warning-foreground: #ffffff;
+  --danger: #ef4444;
+  --danger-foreground: #ffffff;
+
+  --muted: #6b7280;
+  --muted-foreground: #9ca3af;
+
+  --code-bg: #f1f5f9;
+  --code-foreground: #1e293b;
+
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.03);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.03);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.05), 0 4px 6px -4px rgb(0 0 0 / 0.03);
+
+  /* Apple: translucent materials */
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.4);
+}
+
+/* --- Dark Mode --- */
+.dark {
+  --background: #09090b;
+  --foreground: #fafafa;
+
+  --card: #18181b;
+  --card-foreground: #fafafa;
+  --card-hover: #27272a;
+
+  --sidebar: #0f0f12;
+  --sidebar-foreground: #a1a1aa;
+  --sidebar-border: #27272a;
+  --sidebar-hover: #1c1c22;
+  --sidebar-active: #1e1b4b;
+  --sidebar-active-text: #a5b4fc;
+
+  --border: #27272a;
+  --border-subtle: #1c1c1e;
+  --input: #1c1c22;
+  --input-border: #3f3f46;
+  --input-focus: #6366f1;
+
+  --primary: #6366f1;
+  --primary-hover: #818cf8;
+  --primary-foreground: #ffffff;
+  --primary-soft: #1e1b4b;
+
+  --secondary: #22d3ee;
+  --secondary-hover: #67e8f9;
+  --secondary-foreground: #09090b;
+
+  --accent: #a78bfa;
+  --accent-hover: #c4b5fd;
+  --accent-foreground: #09090b;
+
+  --success: #34d399;
+  --success-foreground: #09090b;
+  --warning: #fbbf24;
+  --warning-foreground: #09090b;
+  --danger: #f87171;
+  --danger-foreground: #ffffff;
+
+  --muted: #71717a;
+  --muted-foreground: #52525b;
+
+  --code-bg: #1e1e2e;
+  --code-foreground: #cdd6f4;
+
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.3);
+
+  --glass-bg: rgba(15, 15, 18, 0.75);
+  --glass-border: rgba(255, 255, 255, 0.06);
+}
+
+/* --- Tailwind v4 Theme Tokens --- */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-card-hover: var(--card-hover);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-hover: var(--sidebar-hover);
+  --color-sidebar-active: var(--sidebar-active);
+  --color-sidebar-active-text: var(--sidebar-active-text);
+  --color-border: var(--border);
+  --color-border-subtle: var(--border-subtle);
+  --color-input: var(--input);
+  --color-input-border: var(--input-border);
+  --color-input-focus: var(--input-focus);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-soft: var(--primary-soft);
+  --color-secondary: var(--secondary);
+  --color-secondary-hover: var(--secondary-hover);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-danger: var(--danger);
+  --color-danger-foreground: var(--danger-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-code-bg: var(--code-bg);
+  --color-code-foreground: var(--code-foreground);
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  /* Emil: keep UI animations under 300ms */
+  --animate-fade-in: fade-in 200ms var(--ease-out) both;
+  --animate-scale-in: scale-in 200ms var(--ease-out) both;
+  --animate-slide-in-left: slide-in-left 250ms var(--ease-out) both;
+  --animate-slide-out-left: slide-out-left 200ms var(--ease-out) both;
+  --animate-toast-in: toast-in 400ms var(--ease-out) both;
+}
+
+/* --- Keyframes (Emil: start from scale(0.95), never scale(0)) --- */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes scale-in {
+  from { transform: scale(0.96); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+@keyframes slide-in-left {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+@keyframes slide-out-left {
+  from { transform: translateX(0); }
+  to { transform: translateX(-100%); }
+}
+@keyframes toast-in {
+  from { transform: translateY(100%) scale(0.96); opacity: 0; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
+}
+/* Stagger: fade up (Emil: 30-80ms delays, translateY(8px)) */
+@keyframes stagger-fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- Base Styles --- */
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+/* --- Apple typography: size-specific tracking & leading --- */
+h1, .heading-display {
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+  font-optical-sizing: auto;
+}
+h2 {
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+h3 {
+  line-height: 1.25;
+  letter-spacing: -0.015em;
+}
+
+/* --- Emil: buttons MUST feel responsive --- */
+button, [role="button"], .pressable {
+  transition: transform 160ms var(--ease-out);
+}
+button:active, [role="button"]:active, .pressable:active {
+  transform: scale(0.97);
+}
+
+/* --- Emil: hover only on devices that support it --- */
+@media (hover: hover) and (pointer: fine) {
+  .hover-lift {
+    transition: transform 200ms var(--ease-out), box-shadow 200ms var(--ease-out);
+  }
+  .hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+}
+
+/* --- Apple: translucent materials --- */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--glass-border);
+}
+
+/* --- Custom Scrollbar --- */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--muted-foreground);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted);
+}
+
+/* --- Selection --- */
+::selection {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+/* --- Focus Ring --- */
+*:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* --- Code --- */
+pre, code {
+  font-family: var(--font-geist-mono), 'Fira Code', monospace;
+}
+textarea.mono-input {
+  font-family: var(--font-geist-mono), 'Fira Code', monospace;
+  tab-size: 2;
+}
+
+/* --- Emil: stagger children (use on parent) --- */
+.stagger-children > * {
+  opacity: 0;
+  animation: stagger-fade-up 300ms var(--ease-out) forwards;
+}
+.stagger-children > *:nth-child(1) { animation-delay: 0ms; }
+.stagger-children > *:nth-child(2) { animation-delay: 50ms; }
+.stagger-children > *:nth-child(3) { animation-delay: 100ms; }
+.stagger-children > *:nth-child(4) { animation-delay: 150ms; }
+.stagger-children > *:nth-child(5) { animation-delay: 200ms; }
+.stagger-children > *:nth-child(6) { animation-delay: 250ms; }
+.stagger-children > *:nth-child(7) { animation-delay: 300ms; }
+.stagger-children > *:nth-child(8) { animation-delay: 350ms; }
+
+/* --- Reduced motion (Apple: crossfade, no slide/spring) --- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 200ms !important;
+  }
+  .glass {
+    backdrop-filter: blur(4px);
+  }
+}
+
+/* --- Reduced transparency (Apple) --- */
+@media (prefers-reduced-transparency: reduce) {
+  .glass {
+    background: var(--sidebar);
+    backdrop-filter: none;
+  }
+}

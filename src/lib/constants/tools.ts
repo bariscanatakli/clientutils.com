@@ -75,10 +75,10 @@ export const TOOLS: Tool[] = [
   },
   {
     id: "uuid-generator",
-    name: "UUID / ULID Generator",
+    name: "UUID Generator & Validator",
     description:
-      "Generate UUID v1, v4, v7 and ULID identifiers. Bulk generate up to 100 IDs at once. Copy individually or all at once with a single click.",
-    shortDescription: "UUID v4/v7 ve ULID toplu üretimi",
+      "Generate UUID v1, v4, v7 and ULID identifiers in batches, or validate and inspect pasted values, versions, variants, normalization and ULID timestamps.",
+    shortDescription: "UUID/ULID üret, doğrula ve sürümü incele",
     category: "generators",
     path: "/tools/uuid-generator",
     seoKeyword: "uuid generator v4",

@@ -1,50 +1,81 @@
 import type { Metadata } from "next";
-import { buildPageMeta } from "@/lib/constants/seo";
+import Link from "next/link";
+import { SITE_CONFIG, buildPageMeta } from "@/lib/constants/seo";
 import { UuidGeneratorClient } from "./UuidGeneratorClient";
 
-export const metadata: Metadata = buildPageMeta({
-  title: "UUID / ULID Generator",
-  description:
-    "Generate UUID v1, v4, v7 and ULID identifiers instantly. Bulk generate up to 100 IDs at once. Free, client-side, no data sent to servers.",
-  path: "/tools/uuid-generator",
-});
+const path = "/tools/uuid-generator";
+const description = "Generate UUID v1, v4, v7 and ULID batches, or validate pasted identifiers and inspect UUID versions, variants, normalization and ULID timestamps locally.";
+
+export const metadata: Metadata = buildPageMeta({ title: "UUID Generator & Validator — v1, v4, v7 and ULID", description, path });
+
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  name: "UUID Generator and Validator",
+  url: `${SITE_CONFIG.url}${path}`,
+  description,
+  applicationCategory: "DeveloperApplication",
+  operatingSystem: "Any",
+  browserRequirements: "Requires JavaScript",
+  offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+};
 
 export default function UuidGeneratorPage() {
   return (
     <>
+      <script dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, "\\u003c") }} type="application/ld+json" />
+      <nav aria-label="Breadcrumb" className="mx-auto mb-5 max-w-6xl text-sm text-muted">
+        <Link className="hover:text-foreground" href="/">Home</Link><span aria-hidden="true"> / </span>
+        <Link className="hover:text-foreground" href="/tools">Developer tools</Link><span aria-hidden="true"> / </span>
+        <span aria-current="page">UUID Generator &amp; Validator</span>
+      </nav>
+
       <UuidGeneratorClient />
 
-      {/* SEO & Context Content */}
-      <div className="mt-16 mx-auto max-w-4xl pt-8 border-t border-border prose prose-sm dark:prose-invert">
-        <h2 className="text-lg font-semibold text-foreground mb-4">What is a UUID?</h2>
-        <p className="text-muted leading-relaxed mb-6">
-          A Universally Unique Identifier (UUID) is a 128-bit label used for information in computer systems. 
-          When generated according to the standard methods, UUIDs are for practical purposes unique. 
-          Their uniqueness does not depend on a central registration authority or coordination between the parties generating them.
-        </p>
+      <div className="mx-auto mt-16 max-w-5xl border-t border-border pt-8 text-muted">
+        <section>
+          <h2 className="mb-3 text-xl font-semibold text-foreground">Generate or validate an identifier</h2>
+          <ol className="list-decimal space-y-2 pl-5 leading-relaxed">
+            <li>Choose UUID v4 for random identifiers, v7 or ULID for time-sortable values, or v1 for compatibility with time-based systems.</li>
+            <li>Select 1–100 values and generate, copy, or download the batch.</li>
+            <li>Open Validate &amp; inspect to paste values or upload a text file. UUIDs may include or omit hyphens.</li>
+            <li>Review validity, normalized form, detected UUID version and variant, or the timestamp embedded in a ULID.</li>
+          </ol>
+        </section>
 
-        <h3 className="text-md font-semibold text-foreground mb-3">UUID Versions</h3>
-        <ul className="space-y-3 text-muted list-none pl-0">
-          <li>
-            <strong className="text-foreground">UUID v4 (Random):</strong> 
-            The most common version. It is generated using random or pseudo-random numbers. Extremely low probability of collision.
-          </li>
-          <li>
-            <strong className="text-foreground">UUID v1 (Time-based):</strong> 
-            Generated using a combination of the computer&apos;s MAC address and the current time. Useful if you need to know exactly when and where the UUID was generated.
-          </li>
-          <li>
-            <strong className="text-foreground">UUID v7 (Time-ordered):</strong> 
-            A newer standard that combines a Unix timestamp with random data. This makes UUIDs sortable by creation time, which is highly beneficial for database performance (especially as primary keys).
-          </li>
-        </ul>
+        <section className="mt-10">
+          <h2 className="mb-3 text-xl font-semibold text-foreground">Which identifier format should you use?</h2>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="rounded-xl border border-border bg-card p-4"><h3 className="font-semibold text-foreground">UUID v4</h3><p className="mt-2 text-sm leading-relaxed">Random and widely supported. A dependable default when insertion order is not important.</p></div>
+            <div className="rounded-xl border border-border bg-card p-4"><h3 className="font-semibold text-foreground">UUID v7</h3><p className="mt-2 text-sm leading-relaxed">Combines a Unix-millisecond timestamp with random data, making freshly generated values time ordered.</p></div>
+            <div className="rounded-xl border border-border bg-card p-4"><h3 className="font-semibold text-foreground">UUID v1</h3><p className="mt-2 text-sm leading-relaxed">A legacy time-based format. This browser library uses an internal node value; the page does not read your device MAC address.</p></div>
+            <div className="rounded-xl border border-border bg-card p-4"><h3 className="font-semibold text-foreground">ULID</h3><p className="mt-2 text-sm leading-relaxed">A 26-character Crockford Base32 identifier whose leading characters encode time for lexical sorting.</p></div>
+          </div>
+        </section>
 
-        <h3 className="text-md font-semibold text-foreground mt-6 mb-3">What is a ULID?</h3>
-        <p className="text-muted leading-relaxed mb-6">
-          A Universally Unique Lexicographically Sortable Identifier (ULID) is an alternative to UUID. 
-          It is 26 characters long (compared to 36 for UUID), uses Crockford&apos;s Base32 alphabet (no ambiguous characters like I, L, O, U), 
-          and is lexicographically sortable by time. It provides 1.21e+24 unique ULIDs per millisecond.
-        </p>
+        <section className="mt-10">
+          <h2 className="mb-3 text-xl font-semibold text-foreground">Validation and normalization</h2>
+          <p className="leading-relaxed">The validator accepts standard hyphenated UUIDs and 32-digit compact UUIDs, normalizing valid UUID output to lowercase 8-4-4-4-12 form. It recognizes RFC UUID versions, Nil and Max special values, and valid ULIDs. Validation checks structure and reserved bits; it cannot prove that an identifier is unique or that it exists in a database.</p>
+        </section>
+
+        <section className="mt-10">
+          <h2 className="mb-3 text-xl font-semibold text-foreground">Frequently asked questions</h2>
+          <div className="space-y-5">
+            <div><h3 className="font-semibold text-foreground">I searched for “uudi”. Is that the same thing?</h3><p className="mt-1 leading-relaxed">“UUDI” is a common transposition of UUID. The standard term is UUID: Universally Unique Identifier. This page generates and validates UUIDs.</p></div>
+            <div><h3 className="font-semibold text-foreground">Are UUIDs safe for passwords or API secrets?</h3><p className="mt-1 leading-relaxed">No. UUIDs and ULIDs are identifiers, not credentials. Use a cryptographically generated secret with sufficient entropy for passwords, tokens, and API keys.</p></div>
+            <div><h3 className="font-semibold text-foreground">Does UUID v7 reveal creation time?</h3><p className="mt-1 leading-relaxed">Yes, UUID v7 includes a Unix-millisecond timestamp. The validator reports UUID version but currently decodes the embedded timestamp only for ULIDs.</p></div>
+            <div><h3 className="font-semibold text-foreground">Are uploaded values sent anywhere?</h3><p className="mt-1 leading-relaxed">No. Text-file reading, generation, validation, and normalization run locally in the browser.</p></div>
+          </div>
+        </section>
+
+        <section className="mt-10">
+          <h2 className="mb-3 text-xl font-semibold text-foreground">Related developer tools</h2>
+          <div className="flex flex-wrap gap-3">
+            <Link className="rounded-lg border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground hover:bg-card-hover" href="/tools/hash-generator">Hash Generator</Link>
+            <Link className="rounded-lg border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground hover:bg-card-hover" href="/tools/password-generator">Password Generator</Link>
+            <Link className="rounded-lg border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground hover:bg-card-hover" href="/tools/timestamp-converter">Timestamp Converter</Link>
+          </div>
+        </section>
       </div>
     </>
   );

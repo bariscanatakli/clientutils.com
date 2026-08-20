@@ -111,13 +111,13 @@ export const TOOLS: Tool[] = [
   },
   {
     id: "regex-tester",
-    name: "Regex Tester",
+    name: "Regex Tester & Replace Tool",
     description:
-      "Test regular expressions with real-time match highlighting. See capture groups, match indices, and use our library of common patterns. Replace mode included.",
-    shortDescription: "Regex test, match vurgulama ve şablon kütüphanesi",
+      "Test JavaScript regex patterns, inspect matches and capture groups, and preview replacements in a timeout-protected browser worker.",
+    shortDescription: "Regex eşleşmelerini, grupları ve replace çıktısını güvenle test et",
     category: "helpers",
     path: "/tools/regex-tester",
-    seoKeyword: "online regex tester",
+    seoKeyword: "javascript regex tester replace",
     icon: "🔍",
     isPopular: true,
   },

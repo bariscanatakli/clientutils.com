@@ -1,35 +1,27 @@
 import type { Metadata } from "next";
-import { buildPageMeta } from "@/lib/constants/seo";
+import Link from "next/link";
+import { SITE_CONFIG, buildPageMeta } from "@/lib/constants/seo";
 import { RegexTesterClient } from "./RegexTesterClient";
 
-export const metadata: Metadata = buildPageMeta({
-  title: "Online Regex Tester & Debugger",
-  description:
-    "Test, debug, and visualize regular expressions in real-time. Features live text highlighting, execution time metrics, and common regex templates.",
-  path: "/tools/regex-tester",
-});
+const path = "/tools/regex-tester";
+const description = "Test JavaScript regex patterns, inspect matches and capture groups, and preview replacements in a timeout-protected browser worker.";
+export const metadata: Metadata = buildPageMeta({ title: "Regex Tester & Replace Tool — JavaScript Patterns", description, path });
+
+const structuredData = { "@context": "https://schema.org", "@type": "WebApplication", name: "Regex Tester and Replace Tool", url: `${SITE_CONFIG.url}${path}`, description, applicationCategory: "DeveloperApplication", operatingSystem: "Any", browserRequirements: "Requires JavaScript", offers: { "@type": "Offer", price: "0", priceCurrency: "USD" } };
 
 export default function RegexTesterPage() {
-  return (
-    <>
-      <RegexTesterClient />
-
-      {/* SEO & Context Content */}
-      <div className="mt-16 mx-auto max-w-5xl pt-8 border-t border-border prose prose-sm dark:prose-invert">
-        <h2 className="text-lg font-semibold text-foreground mb-4">What is a Regular Expression?</h2>
-        <p className="text-muted leading-relaxed mb-6">
-          A regular expression (shortened as regex or regexp) is a sequence of characters that specifies a search pattern in text. 
-          Usually such patterns are used by string-searching algorithms for &quot;find&quot; or &quot;find and replace&quot; operations on strings, or for input validation.
-        </p>
-
-        <h3 className="text-md font-semibold text-foreground mb-3">Common Regex Flags</h3>
-        <ul className="space-y-2 text-muted list-none pl-0">
-          <li><strong>g (Global):</strong> Don&apos;t return after the first match, restart the subsequent searches from the end of the previous match.</li>
-          <li><strong>i (Case Insensitive):</strong> Match both uppercase and lowercase letters.</li>
-          <li><strong>m (Multiline):</strong> `^` and `$` match the start and end of a line, instead of the whole string.</li>
-          <li><strong>s (DotAll):</strong> Allows the dot `.` character to match newline characters.</li>
-        </ul>
-      </div>
-    </>
-  );
+  return <>
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, "\\u003c") }} />
+    <nav aria-label="Breadcrumb" className="mx-auto mb-5 max-w-6xl text-sm text-muted"><Link className="hover:text-foreground" href="/">Home</Link><span aria-hidden="true"> / </span><Link className="hover:text-foreground" href="/tools">Developer tools</Link><span aria-hidden="true"> / </span><span aria-current="page">Regex Tester</span></nav>
+    <RegexTesterClient />
+    <div className="mx-auto mt-16 max-w-5xl border-t border-border pt-8 text-muted">
+      <section><h2 className="mb-3 text-xl font-semibold text-foreground">Test and replace with a JavaScript regex</h2><ol className="list-decimal space-y-2 pl-5 leading-relaxed"><li>Enter a pattern without surrounding slashes, then enable only the flags your JavaScript code uses.</li><li>Paste text, load a local UTF-8 file or start from a focused example. Matches update in an isolated browser worker.</li><li>Inspect match indices, numbered groups and named groups. Enable <code>g</code> when you need every match rather than the first.</li><li>Switch to Replace to preview JavaScript replacement tokens, then copy or download the exact result.</li></ol></section>
+      <section className="mt-10"><h2 className="mb-3 text-xl font-semibold text-foreground">Flags and replacement tokens</h2><div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"><Info title="g — global">Find or replace every match. Without it, JavaScript stops after the first match.</Info><Info title="i — ignore case">Treat uppercase and lowercase forms as equivalent according to JavaScript regex rules.</Info><Info title="m and s">Multiline changes how <code>^</code> and <code>$</code> treat lines; DotAll lets <code>.</code> include line terminators.</Info><Info title="u — Unicode">Interpret the pattern as Unicode code points and apply stricter escape validation.</Info><Info title="Numbered groups">Use <code>$1</code>, <code>$2</code> and later tokens in replacement output for capturing parentheses.</Info><Info title="Named groups">Define <code>(?&lt;name&gt;...)</code> and reference it with <code>$&lt;name&gt;</code>. Use <code>$&amp;</code> for the complete match.</Info></div></section>
+      <section className="mt-10"><h2 className="mb-3 text-xl font-semibold text-foreground">Performance and security limits</h2><p className="leading-relaxed">JavaScript regular expressions can exhibit catastrophic backtracking when nested or ambiguous quantifiers explore many alternatives. ClientUtils evaluates each edit in a disposable Web Worker and terminates it after 300 ms, preventing that evaluation from blocking the page. The tool also caps input at 200,000 UTF-8 bytes and displays at most 500 matches.</p><p className="mt-4 leading-relaxed">A fast result for one sample does not prove a pattern is safe for arbitrary production input. Prefer bounded quantifiers and unambiguous alternatives, test representative worst cases, and enforce independent request/input limits in your application. Regex validation alone is not a substitute for parsing, normalization, authorization or output escaping.</p></section>
+      <section className="mt-10"><h2 className="mb-3 text-xl font-semibold text-foreground">Frequently asked questions</h2><div className="space-y-5"><Info title="Why do I only see one match?">Enable the global <code>g</code> flag. JavaScript regex execution and replacement stop after the first match without it.</Info><Info title="Why was execution stopped?">The pattern exceeded the 300 ms safety budget, commonly because nested quantifiers or overlapping alternatives caused excessive backtracking. Simplify the pattern and reduce ambiguity.</Info><Info title="Why are zero-length matches not highlighted?">They have no visible characters to mark. They remain listed with their index and can still affect replacement output.</Info><Info title="Is my test text uploaded?">No. Testing and replacement run locally in a short-lived browser worker. Files are read into browser memory and limited to 200,000 bytes.</Info></div></section>
+      <section className="mt-10"><h2 className="mb-3 text-xl font-semibold text-foreground">Related text tools</h2><div className="flex flex-wrap gap-3"><Link className="rounded-lg border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground hover:bg-card-hover" href="/tools/line-sort">Line Cleaner</Link><Link className="rounded-lg border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground hover:bg-card-hover" href="/tools/json-escape">JSON Escape</Link><Link className="rounded-lg border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground hover:bg-card-hover" href="/tools/diff-checker">Text Diff Checker</Link></div></section>
+    </div>
+  </>;
 }
+
+function Info({ title, children }: { title: string; children: React.ReactNode }) { return <div className="rounded-xl border border-border bg-card p-4"><h3 className="font-semibold text-foreground">{title}</h3><p className="mt-2 text-sm leading-relaxed">{children}</p></div>; }

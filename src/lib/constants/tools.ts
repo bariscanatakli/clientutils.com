@@ -155,13 +155,13 @@ export const TOOLS: Tool[] = [
   },
   {
     id: "css-gradient-generator",
-    name: "CSS Gradient Generator",
+    name: "Tailwind Gradient Generator",
     description:
-      "Create beautiful CSS gradients with a visual editor. Linear, radial, and conic gradients. Copy CSS code or Tailwind classes. Preset color palettes included.",
-    shortDescription: "CSS gradient oluşturucu, Tailwind sınıfı çıktısı",
+      "Build linear, radial, and conic gradients visually. Control colors and stop positions, then copy valid Tailwind v4 or v3-compatible classes, HTML, and CSS.",
+    shortDescription: "Tailwind v4/v3 gradient sınıfları ve canlı önizleme",
     category: "helpers",
     path: "/tools/css-gradient",
-    seoKeyword: "css gradient generator",
+    seoKeyword: "tailwind gradient generator",
     icon: "🎨",
   },
   {

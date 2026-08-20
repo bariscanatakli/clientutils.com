@@ -1,59 +1,59 @@
 export type GradientType = "linear" | "radial" | "conic";
+export type TailwindVersion = "v4" | "v3";
 
 export interface ColorStop {
   id: string;
-  color: string; // hex or rgba
-  position: number; // 0 to 100
+  color: string;
+  position: number;
 }
 
 export interface GradientConfig {
   type: GradientType;
-  angle: number; // for linear and conic
-  shape: "circle" | "ellipse"; // for radial
-  position: string; // for radial, e.g. "center", "top left"
+  angle: number;
+  shape: "circle" | "ellipse";
+  position: string;
   stops: ColorStop[];
 }
 
-export function generateGradientCSS(config: GradientConfig): string {
-  const sortedStops = [...config.stops].sort((a, b) => a.position - b.position);
-  const stopsStr = sortedStops.map(s => `${s.color} ${s.position}%`).join(", ");
-
-  switch (config.type) {
-    case "linear":
-      return `linear-gradient(${config.angle}deg, ${stopsStr})`;
-    case "radial":
-      return `radial-gradient(${config.shape} at ${config.position}, ${stopsStr})`;
-    case "conic":
-      return `conic-gradient(from ${config.angle}deg, ${stopsStr})`;
-    default:
-      return "";
-  }
+function normalizedAngle(angle: number): number {
+  return ((Math.round(angle) % 360) + 360) % 360;
 }
 
-export function generateTailwindClass(config: GradientConfig): string {
-  // We only support simple 2 or 3 stop linear gradients for Tailwind output
-  // to avoid overly complex arbitrary values
-  if (config.type !== "linear") return "/* Tailwind sınıfları sadece basit linear-gradient için desteklenir */";
+function sortedStops(config: GradientConfig): ColorStop[] {
+  return [...config.stops].sort((first, second) => first.position - second.position);
+}
 
-  let dirClass = "";
-  // Map angles to standard tailwind directions approximately
-  const ang = config.angle % 360;
-  if (ang >= 337.5 || ang < 22.5) dirClass = "bg-gradient-to-t";
-  else if (ang >= 22.5 && ang < 67.5) dirClass = "bg-gradient-to-tr";
-  else if (ang >= 67.5 && ang < 112.5) dirClass = "bg-gradient-to-r";
-  else if (ang >= 112.5 && ang < 157.5) dirClass = "bg-gradient-to-br";
-  else if (ang >= 157.5 && ang < 202.5) dirClass = "bg-gradient-to-b";
-  else if (ang >= 202.5 && ang < 247.5) dirClass = "bg-gradient-to-bl";
-  else if (ang >= 247.5 && ang < 292.5) dirClass = "bg-gradient-to-l";
-  else if (ang >= 292.5 && ang < 337.5) dirClass = "bg-gradient-to-tl";
+export function generateGradientCSS(config: GradientConfig): string {
+  const stops = sortedStops(config).map((stop) => `${stop.color} ${stop.position}%`).join(", ");
+  if (config.type === "linear") return `linear-gradient(${normalizedAngle(config.angle)}deg, ${stops})`;
+  if (config.type === "radial") return `radial-gradient(${config.shape} at ${config.position}, ${stops})`;
+  return `conic-gradient(from ${normalizedAngle(config.angle)}deg, ${stops})`;
+}
 
-  const sortedStops = [...config.stops].sort((a, b) => a.position - b.position);
-  
-  if (sortedStops.length === 2) {
-    return `${dirClass} from-[${sortedStops[0].color}] to-[${sortedStops[1].color}]`;
-  } else if (sortedStops.length === 3) {
-    return `${dirClass} from-[${sortedStops[0].color}] via-[${sortedStops[1].color}] to-[${sortedStops[2].color}]`;
-  } else {
-     return "/* 2 veya 3 renkten fazlası için özel CSS kullanın */";
-  }
+function arbitraryBackground(config: GradientConfig): string {
+  return `bg-[${generateGradientCSS(config).replace(/ /g, "_")}]`;
+}
+
+function stopUtilities(config: GradientConfig): string {
+  const stops = sortedStops(config);
+  const first = stops[0];
+  const last = stops[stops.length - 1];
+  const classes = [`from-[${first.color}]`, `from-[${first.position}%]`];
+  if (stops.length === 3) classes.push(`via-[${stops[1].color}]`, `via-[${stops[1].position}%]`);
+  classes.push(`to-[${last.color}]`, `to-[${last.position}%]`);
+  return classes.join(" ");
+}
+
+export function generateTailwindClass(config: GradientConfig, version: TailwindVersion): string {
+  if (version === "v3" || config.stops.length > 3) return arbitraryBackground(config);
+
+  let background: string;
+  if (config.type === "linear") background = `bg-linear-${normalizedAngle(config.angle)}`;
+  else if (config.type === "radial") background = `bg-radial-[${config.shape}_at_${config.position.replace(/ /g, "_")}]`;
+  else background = `bg-conic-${normalizedAngle(config.angle)}`;
+  return `${background} ${stopUtilities(config)}`;
+}
+
+export function generateHtmlExample(config: GradientConfig, version: TailwindVersion): string {
+  return `<div class="h-64 w-full rounded-xl ${generateTailwindClass(config, version)}"></div>`;
 }

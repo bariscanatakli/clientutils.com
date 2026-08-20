@@ -64,14 +64,15 @@ export const TOOLS: Tool[] = [
   // --- DALGA 1 & 2 & 3 & 4 (MVP) ---
   {
     id: "cron-parser",
-    name: "Cron Expression Parser",
+    name: "Cron Generator, Tester & Calculator",
     description:
-      "Parse cron expressions instantly. Convert cron to human-readable text. See next 5 run times in your timezone. Supports all standard cron fields and special characters.",
-    shortDescription: "Cron ifadelerini insan diline çevir",
+      "Build, validate and explain 5- or 6-field cron expressions. Preview up to 20 future runs in UTC, Istanbul, Berlin, New York and other named timezones.",
+    shortDescription: "Cron oluştur, doğrula ve sonraki çalışmaları hesapla",
     category: "converters",
     path: "/tools/cron-parser",
-    seoKeyword: "cron expression reader",
+    seoKeyword: "cron job calculator tester generator",
     icon: "⏰",
+    isPopular: true,
   },
   {
     id: "uuid-generator",
@@ -282,19 +283,6 @@ export const TOOLS: Tool[] = [
     isNew: true,
     isPopular: true,
   },
-  {
-    id: "cron-generator",
-    name: "Cron Expression Generator",
-    description:
-      "Build cron expressions visually with interactive dropdowns. See real-time validation and next execution times.",
-    shortDescription: "Görsel arayüzle Cron job oluştur",
-    category: "generators",
-    path: "/tools/cron-generator",
-    seoKeyword: "cron expression generator",
-    icon: "⚙️",
-    isNew: true,
-  },
-
   // --- PHASE 3: SPRINT 1 (Data & Text) ---
   {
     id: "json-escape",

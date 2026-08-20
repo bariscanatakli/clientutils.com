@@ -1,56 +1,30 @@
 import type { Metadata } from "next";
-import { buildPageMeta } from "@/lib/constants/seo";
+import Link from "next/link";
+import { SITE_CONFIG, buildPageMeta } from "@/lib/constants/seo";
 import { Base64EncoderClient } from "./Base64EncoderClient";
 
-export const metadata: Metadata = buildPageMeta({
-  title: "Base64 Encoder & Decoder",
-  description:
-    "Encode and decode text or files to Base64 format instantly. Support for image previews and data URI extraction. 100% secure, client-side processing.",
-  path: "/tools/base64-encoder",
-});
+const path = "/tools/base64-encoder";
+const description = "Encode or strictly decode UTF-8 text and binary files with standard or URL-safe Base64. Handle data URIs and recover files locally.";
+export const metadata: Metadata = buildPageMeta({ title: "Base64 Encoder & Decoder — Text, Files and Data URIs", description, path });
+const structuredData = { "@context": "https://schema.org", "@type": "WebApplication", name: "Base64 Encoder and Decoder for Text and Files", url: `${SITE_CONFIG.url}${path}`, description, applicationCategory: "DeveloperApplication", operatingSystem: "Any", browserRequirements: "Requires JavaScript", offers: { "@type": "Offer", price: "0", priceCurrency: "USD" } };
 
 export default function Base64EncoderPage() {
-  return (
-    <>
-      <Base64EncoderClient />
+  return <>
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, "\\u003c") }} />
+    <nav aria-label="Breadcrumb" className="mx-auto mb-5 max-w-6xl text-sm text-muted"><Link className="hover:text-foreground" href="/">Home</Link><span aria-hidden="true"> / </span><Link className="hover:text-foreground" href="/tools">Developer tools</Link><span aria-hidden="true"> / </span><span aria-current="page">Base64 Encoder &amp; Decoder</span></nav>
+    <Base64EncoderClient />
+    <div className="mx-auto mt-16 max-w-5xl border-t border-border pt-8 text-muted">
+      <section><h2 className="mb-3 text-xl font-semibold text-foreground">Encode or decode Base64 correctly</h2><ol className="list-decimal space-y-2 pl-5 leading-relaxed"><li>Choose Text for UTF-8 strings or File / binary when exact bytes and downloads matter.</li><li>For encoding, select the standard or URL-safe alphabet and whether the output should retain <code>=</code> padding.</li><li>For decoding, paste raw Base64 or a <code>data:...;base64,...</code> URI. The tool validates the alphabet, padding, length and final padding bits.</li><li>Inspect the decoded size and media type, then copy text or download the recovered binary file.</li></ol></section>
 
-      {/* SEO & Context Content */}
-      <div className="mt-16 mx-auto max-w-5xl pt-8 border-t border-border prose prose-sm dark:prose-invert">
-        <h2 className="text-lg font-semibold text-foreground mb-4">What is Base64 Encoding?</h2>
-        <p className="text-muted leading-relaxed mb-6">
-          Base64 is a group of binary-to-text encoding schemes that represent binary data in an ASCII string format by translating it into a radix-64 representation. 
-          The term Base64 originates from a specific MIME content transfer encoding.
-        </p>
+      <section className="mt-10"><h2 className="mb-3 text-xl font-semibold text-foreground">Standard, URL-safe and data URI formats</h2><div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"><Info title="Standard Base64">Uses letters, digits, <code>+</code> and <code>/</code>, normally with <code>=</code> padding to a multiple of four characters.</Info><Info title="URL-safe Base64">Replaces <code>+</code> with <code>-</code> and <code>/</code> with <code>_</code>. Padding is often omitted in URLs and tokens.</Info><Info title="Data URI">Prefixes encoded bytes with a media type, for example <code>data:image/png;base64,...</code>. This tool detects that type during file recovery.</Info><Info title="UTF-8 text">Text is first converted to UTF-8 bytes. Unicode characters may therefore produce more than one byte before Base64 encoding.</Info><Info title="Binary files">Files are encoded from their exact bytes. Decoding a binary payload as UTF-8 text can fail even when the Base64 itself is valid.</Info><Info title="Size expansion">Four Base64 characters represent three source bytes, so output is roughly 33% larger before line wrapping or a data URI prefix.</Info></div></section>
 
-        <h3 className="text-md font-semibold text-foreground mb-3">Why use Base64?</h3>
-        <ul className="space-y-3 text-muted list-none pl-0">
-          <li>
-            <strong className="text-foreground">Data embedding:</strong> 
-            It is commonly used to embed image files or other binary assets inside HTML, CSS, or JSON files. This reduces the number of HTTP requests required to load a web page.
-          </li>
-          <li>
-            <strong className="text-foreground">Email attachments:</strong> 
-            MIME uses Base64 to encode email attachments so they can be safely transmitted over SMTP, which was originally designed for 7-bit ASCII text.
-          </li>
-          <li>
-            <strong className="text-foreground">Safe URL transmission:</strong> 
-            Since Base64 encoded strings only contain letters, numbers, and basic symbols (`+`, `/`, `=`), they can be safely passed in URLs (sometimes using a URL-safe variant where `+` and `/` are replaced).
-          </li>
-        </ul>
-        
-        <div className="mt-6 p-4 rounded-lg bg-warning/10 border border-warning/20">
-          <p className="text-warning-foreground font-semibold m-0 flex items-center gap-2">
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
-            Security Note
-          </p>
-          <p className="text-muted mt-2 mb-0">
-            Base64 is an <strong>encoding</strong> method, not an <strong>encryption</strong> method. It provides no security or obfuscation. 
-            Anyone with access to the Base64 string can decode it back to its original form. Do not use Base64 to hide passwords or sensitive data.
-          </p>
-        </div>
-      </div>
-    </>
-  );
+      <section className="mt-10"><h2 className="mb-3 text-xl font-semibold text-foreground">Security and practical limits</h2><div className="rounded-xl border border-warning/30 bg-warning/5 p-4"><h3 className="font-semibold text-foreground">Base64 is encoding, not encryption</h3><p className="mt-2 leading-relaxed">Anyone who receives a Base64 value can decode it. Do not use Base64 to protect passwords, API keys, tokens, personal data or confidential files. Apply appropriate encryption and access control separately.</p></div><p className="mt-4 leading-relaxed">Processing happens in browser memory and files are capped at 5 MB. Raw decode input is capped at 8 MB to accommodate the encoded expansion. Embedding large Base64 assets in HTML, CSS or JSON increases transfer and parsing cost; ordinary file URLs are often more cacheable and efficient.</p></section>
+
+      <section className="mt-10"><h2 className="mb-3 text-xl font-semibold text-foreground">Frequently asked questions</h2><div className="space-y-5"><Info title="Why is valid Base64 rejected?">The decoder uses canonical validation. Mixed alphabets, misplaced padding, impossible lengths and non-zero unused padding bits are rejected instead of being silently repaired.</Info><Info title="Can I decode Base64 without padding?">Yes. Valid unpadded standard and URL-safe values are accepted; the missing padding is reconstructed only for decoding.</Info><Info title="Why does text decode report invalid UTF-8?">The Base64 may contain arbitrary binary bytes rather than UTF-8. Switch to File / binary decode and download the exact bytes.</Info><Info title="Are files uploaded?">No. File reading, encoding, validation, preview and download all occur in your browser.</Info></div></section>
+
+      <section className="mt-10"><h2 className="mb-3 text-xl font-semibold text-foreground">Related encoding tools</h2><div className="flex flex-wrap gap-3"><Link className="rounded-lg border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground hover:bg-card-hover" href="/tools/url-encoder">URL Encoder</Link><Link className="rounded-lg border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground hover:bg-card-hover" href="/tools/html-encode">HTML Encoder</Link><Link className="rounded-lg border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground hover:bg-card-hover" href="/tools/jwt-decoder">JWT Decoder</Link></div></section>
+    </div>
+  </>;
 }
+
+function Info({ title, children }: { title: string; children: React.ReactNode }) { return <div className="rounded-xl border border-border bg-card p-4"><h3 className="font-semibold text-foreground">{title}</h3><p className="mt-2 text-sm leading-relaxed">{children}</p></div>; }

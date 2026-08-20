@@ -1,76 +1,105 @@
-export function encodeText(text: string): string {
+export type Base64Variant = "standard" | "url";
+
+export interface Base64DecodeResult {
+  bytes: Uint8Array;
+  error: string | null;
+  mimeType: string | null;
+  isDataUri: boolean;
+  variant: Base64Variant;
+  normalized: string;
+}
+
+export const MAX_BASE64_FILE_BYTES = 5 * 1024 * 1024;
+export const MAX_BASE64_TEXT_BYTES = 8 * 1024 * 1024;
+
+function binaryFromBytes(bytes: Uint8Array): string {
+  const chunkSize = 0x8000;
+  let binary = "";
+  for (let offset = 0; offset < bytes.length; offset += chunkSize) {
+    binary += String.fromCharCode(...bytes.subarray(offset, offset + chunkSize));
+  }
+  return binary;
+}
+
+export function encodeBytes(bytes: Uint8Array, variant: Base64Variant = "standard", includePadding = true): string {
+  let encoded = btoa(binaryFromBytes(bytes));
+  if (variant === "url") encoded = encoded.replace(/\+/g, "-").replace(/\//g, "_");
+  return includePadding ? encoded : encoded.replace(/=+$/, "");
+}
+
+export function encodeText(text: string, variant: Base64Variant = "standard", includePadding = true): string {
+  return encodeBytes(new TextEncoder().encode(text), variant, includePadding);
+}
+
+function emptyDecode(error: string): Base64DecodeResult {
+  return { bytes: new Uint8Array(), error, mimeType: null, isDataUri: false, variant: "standard", normalized: "" };
+}
+
+function parseInput(input: string): { payload: string; mimeType: string | null; isDataUri: boolean } | { error: string } {
+  const trimmed = input.trim();
+  if (!trimmed) return { error: "Enter Base64 content to decode." };
+  if (!trimmed.toLowerCase().startsWith("data:")) return { payload: trimmed.replace(/\s/g, ""), mimeType: null, isDataUri: false };
+  const comma = trimmed.indexOf(",");
+  if (comma < 0) return { error: "The data URI is missing its comma separator." };
+  const header = trimmed.slice(5, comma);
+  if (!/(?:^|;)base64(?:;|$)/i.test(header)) return { error: "Only base64-encoded data URIs are supported." };
+  const mimeType = header.split(";")[0] || "application/octet-stream";
+  if (!/^[\w.+-]+\/[\w.+-]+$/.test(mimeType)) return { error: "The data URI contains an invalid media type." };
+  return { payload: trimmed.slice(comma + 1).replace(/\s/g, ""), mimeType, isDataUri: true };
+}
+
+export function decodeBase64(input: string): Base64DecodeResult {
+  const parsed = parseInput(input);
+  if ("error" in parsed) return emptyDecode(parsed.error);
+  const payload = parsed.payload;
+  if (!payload) return emptyDecode("The Base64 payload is empty.");
+  if (/[^A-Za-z0-9+/_=-]/.test(payload)) return emptyDecode("Base64 contains characters outside the standard or URL-safe alphabet.");
+  if (/[+\/]/.test(payload) && /[-_]/.test(payload)) return emptyDecode("Do not mix standard (+, /) and URL-safe (-, _) alphabets.");
+  if (!/^[A-Za-z0-9+/_-]*={0,2}$/.test(payload)) return emptyDecode("Padding (=) is only allowed at the end, at most twice.");
+  const withoutPadding = payload.replace(/=+$/, "");
+  if (withoutPadding.length % 4 === 1) return emptyDecode("Base64 has an impossible length. Check for missing characters.");
+  const variant: Base64Variant = /[-_]/.test(withoutPadding) ? "url" : "standard";
+  const standard = withoutPadding.replace(/-/g, "+").replace(/_/g, "/");
+  const normalized = standard + "=".repeat((4 - standard.length % 4) % 4);
   try {
-    // btoa doesn't handle unicode out of the box, we need to encode encodeURIComponent
-    // but the standard way for Base64 with unicode is text encoder
-    const encoder = new TextEncoder();
-    const bytes = encoder.encode(text);
-    let binary = "";
-    for (let i = 0; i < bytes.byteLength; i++) {
-      binary += String.fromCharCode(bytes[i]);
-    }
-    return btoa(binary);
+    const binary = atob(normalized);
+    const bytes = Uint8Array.from(binary, (character) => character.charCodeAt(0));
+    const canonical = encodeBytes(bytes, variant, false);
+    const comparable = variant === "url" ? withoutPadding : withoutPadding;
+    if (canonical !== comparable) return emptyDecode("Base64 is not canonical; its final padding bits are invalid.");
+    return { bytes, error: null, mimeType: parsed.mimeType, isDataUri: parsed.isDataUri, variant, normalized: encodeBytes(bytes, variant, true) };
   } catch {
-    return "";
+    return emptyDecode("Invalid Base64 encoding.");
   }
 }
 
-export function decodeText(base64: string): { text: string; error: string | null } {
+export function decodeText(input: string): { text: string; error: string | null; details: Base64DecodeResult } {
+  const details = decodeBase64(input);
+  if (details.error) return { text: "", error: details.error, details };
   try {
-    const binary = atob(base64);
-    const bytes = new Uint8Array(binary.length);
-    for (let i = 0; i < binary.length; i++) {
-      bytes[i] = binary.charCodeAt(i);
-    }
-    const decoder = new TextDecoder();
-    return { text: decoder.decode(bytes), error: null };
+    return { text: new TextDecoder("utf-8", { fatal: true }).decode(details.bytes), error: null, details };
   } catch {
-    return { text: "", error: "Geçersiz Base64 formatı" };
+    return { text: "", error: "Decoded bytes are not valid UTF-8 text. Use File decode to download the binary data.", details };
   }
 }
 
-export function encodeFile(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result as string;
-      // reader.result is a data URI: data:[<mediatype>][;base64],<data>
-      // We return the full data URI so it can be previewed or we can extract the base64 part
-      resolve(result); 
-    };
-    reader.onerror = () => reject(new Error("Dosya okuma hatası"));
-    reader.readAsDataURL(file);
-  });
-}
-
-export function isValidBase64(input: string): boolean {
-  if (input === '' || input.trim() === '') return false;
-  try {
-    // Attempt to decode, if it throws, it's not base64
-    return btoa(atob(input)) === input || atob(input).length > 0;
-  } catch {
-    return false;
-  }
+export function toDataUri(base64: string, mimeType: string): string {
+  return `data:${mimeType};base64,${base64}`;
 }
 
 export function getBase64Stats(input: string) {
-  // Rough estimate of size in bytes
-  // Base64 uses 4 characters to represent 3 bytes of data
-  // Equals signs at the end are padding
-  const paddingCount = (input.match(/=/g) || []).length;
-  const byteSize = (input.length * 3) / 4 - paddingCount;
-  
+  const decoded = decodeBase64(input);
   return {
-    charCount: input.length,
-    byteSize: Math.max(0, byteSize),
-    formattedSize: formatBytes(Math.max(0, byteSize))
+    encodedCharacters: input.replace(/\s/g, "").length,
+    decodedBytes: decoded.error ? null : decoded.bytes.length,
+    formattedDecodedSize: decoded.error ? "Unknown" : formatBytes(decoded.bytes.length),
+    error: decoded.error,
   };
 }
 
-function formatBytes(bytes: number, decimals = 2) {
-  if (bytes === 0) return '0 Bytes';
-  const k = 1024;
-  const dm = decimals < 0 ? 0 : decimals;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+export function formatBytes(bytes: number): string {
+  if (bytes === 0) return "0 Bytes";
+  const units = ["Bytes", "KB", "MB", "GB"];
+  const index = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
+  return `${Number((bytes / 1024 ** index).toFixed(2))} ${units[index]}`;
 }

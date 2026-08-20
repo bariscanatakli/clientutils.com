@@ -123,13 +123,13 @@ export const TOOLS: Tool[] = [
   },
   {
     id: "base64-encoder",
-    name: "Base64 Encoder / Decoder",
+    name: "Base64 Encoder & Decoder — Text and Files",
     description:
-      "Encode and decode Base64 strings. Drag-and-drop file and image support with instant preview. Supports text and binary data.",
-    shortDescription: "Base64 kodlama/çözme, dosya sürükle-bırak",
+      "Encode or strictly decode UTF-8 text and binary files with standard or URL-safe Base64. Handle data URIs and recover files locally.",
+    shortDescription: "UTF-8 metin ve binary dosyaları Base64 ile çift yönlü dönüştür",
     category: "encoders",
     path: "/tools/base64-encoder",
-    seoKeyword: "base64 decode online",
+    seoKeyword: "base64 encoder decoder file url safe",
     icon: "🔣",
   },
   {

@@ -1,233 +1,102 @@
 "use client";
 
-import { useState, useRef, useMemo } from "react";
-import { encodeText, decodeText, encodeFile, getBase64Stats, isValidBase64 } from "@/lib/tools/base64-encoder";
+import { useMemo, useRef, useState } from "react";
+import Image from "next/image";
+import { Download, FileUp, RotateCcw } from "lucide-react";
 import { CopyButton } from "@/components/ui/CopyButton";
+import { decodeBase64, decodeText, encodeBytes, encodeText, formatBytes, MAX_BASE64_FILE_BYTES, MAX_BASE64_TEXT_BYTES, toDataUri, type Base64Variant } from "@/lib/tools/base64-encoder";
+
+const TEXT_SAMPLE = "Hello, İstanbul 👋\nBase64 preserves these UTF-8 bytes.";
+const BASE64_SAMPLE = "SGVsbG8sIMSwc3RhbmJ1bCDwn5GLCkJhc2U2NCBwcmVzZXJ2ZXMgdGhlc2UgVVRGLTggYnl0ZXMu";
+const fieldClass = "w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground shadow-sm placeholder:text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+
+function downloadBlob(blob: Blob, name: string) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a"); link.href = url; link.download = name; link.click();
+  window.setTimeout(() => URL.revokeObjectURL(url), 0);
+}
 
 export function Base64EncoderClient() {
   const [mode, setMode] = useState<"text" | "file">("text");
   const [action, setAction] = useState<"encode" | "decode">("encode");
-  
-  const [input, setInput] = useState("");
-  const [fileDataUri, setFileDataUri] = useState<string | null>(null);
-  const [fileName, setFileName] = useState<string>("");
+  const [variant, setVariant] = useState<Base64Variant>("standard");
+  const [includePadding, setIncludePadding] = useState(true);
+  const [input, setInput] = useState(TEXT_SAMPLE);
+  const [fileBytes, setFileBytes] = useState<Uint8Array | null>(null);
+  const [fileName, setFileName] = useState("sample.bin");
+  const [mimeType, setMimeType] = useState("application/octet-stream");
   const [isDragging, setIsDragging] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Text Mode Logic
-  const textOutput = useMemo(() => {
-    if (mode !== "text" || !input) return "";
+  const textResult = useMemo(() => {
+    if (mode !== "text") return { output: "", error: null as string | null, bytes: 0 };
     if (action === "encode") {
-      return encodeText(input);
-    } else {
-      return decodeText(input).text;
+      const bytes = new TextEncoder().encode(input).length;
+      if (bytes > MAX_BASE64_FILE_BYTES) return { output: "", error: `Text is ${formatBytes(bytes)}. Keep it under ${formatBytes(MAX_BASE64_FILE_BYTES)}.`, bytes };
+      return { output: input ? encodeText(input, variant, includePadding) : "", error: null, bytes };
     }
-  }, [input, action, mode]);
+    const decoded = decodeText(input);
+    return { output: decoded.text, error: decoded.error, bytes: decoded.details.bytes.length };
+  }, [mode, action, input, variant, includePadding]);
 
-  const textError = useMemo(() => {
-    if (mode === "text" && action === "decode" && input && !isValidBase64(input)) {
-      return "Geçersiz Base64 dizgesi.";
-    }
+  const fileEncoded = useMemo(() => fileBytes ? encodeBytes(fileBytes, variant, includePadding) : "", [fileBytes, variant, includePadding]);
+  const fileDecoded = useMemo(() => mode === "file" && action === "decode" ? decodeBase64(input) : null, [mode, action, input]);
+  const effectiveMime = fileDecoded?.mimeType ?? (mimeType.trim() || "application/octet-stream");
+  const previewUri = useMemo(() => {
+    if (mode !== "file") return null;
+    if (action === "encode" && fileBytes && mimeType.startsWith("image/")) return toDataUri(encodeBytes(fileBytes), mimeType);
+    if (action === "decode" && fileDecoded && !fileDecoded.error && effectiveMime.startsWith("image/")) return toDataUri(encodeBytes(fileDecoded.bytes), effectiveMime);
     return null;
-  }, [input, action, mode]);
+  }, [mode, action, fileBytes, fileDecoded, mimeType, effectiveMime]);
 
-  const stats = useMemo(() => {
-    const target = mode === "text" && action === "encode" ? textOutput : input;
-    if (!target) return null;
-    return getBase64Stats(target);
-  }, [input, textOutput, action, mode]);
-
-  // File Mode Logic
-  const handleFileChange = async (file: File) => {
+  const reset = () => {
+    setMode("text"); setAction("encode"); setVariant("standard"); setIncludePadding(true); setInput(TEXT_SAMPLE); setFileBytes(null); setFileName("sample.bin"); setMimeType("application/octet-stream"); setActionError(null);
+  };
+  const loadSample = () => { setInput(action === "encode" ? TEXT_SAMPLE : BASE64_SAMPLE); setActionError(null); };
+  const paste = async () => { try { setInput(await navigator.clipboard.readText()); setActionError(null); } catch { setActionError("Clipboard access was unavailable. Paste into the input manually."); } };
+  const selectAction = (next: "encode" | "decode") => { setAction(next); setInput(next === "encode" ? TEXT_SAMPLE : BASE64_SAMPLE); setFileBytes(null); setActionError(null); };
+  const readFile = async (file?: File) => {
     if (!file) return;
-    setFileName(file.name);
-    try {
-      const uri = await encodeFile(file);
-      setFileDataUri(uri);
-    } catch {
-      alert("Dosya okuma hatası.");
-    }
+    if (file.size > MAX_BASE64_FILE_BYTES) { setActionError(`Choose a file no larger than ${formatBytes(MAX_BASE64_FILE_BYTES)}.`); return; }
+    setFileBytes(new Uint8Array(await file.arrayBuffer())); setFileName(file.name); setMimeType(file.type || "application/octet-stream"); setActionError(null);
+  };
+  const downloadEncoded = () => downloadBlob(new Blob([fileEncoded], { type: "text/plain;charset=utf-8" }), `${fileName}.base64.txt`);
+  const downloadDecoded = () => {
+    if (!fileDecoded || fileDecoded.error) return;
+    const buffer = new ArrayBuffer(fileDecoded.bytes.length);
+    new Uint8Array(buffer).set(fileDecoded.bytes);
+    downloadBlob(new Blob([buffer], { type: effectiveMime }), fileName.trim() || "decoded-file.bin");
   };
 
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      handleFileChange(e.dataTransfer.files[0]);
-    }
-  };
+  return <main className="mx-auto max-w-6xl space-y-8">
+    <header className="space-y-2"><h1 className="text-3xl font-bold tracking-tight">Base64 Encoder &amp; Decoder for Text and Files</h1><p className="max-w-3xl text-lg text-muted">Encode UTF-8 text or binary files, strictly decode standard and URL-safe Base64, and recover the original bytes locally.</p></header>
 
-  // Base64 without data type prefix for copy
-  const rawFileBase64 = useMemo(() => {
-    if (!fileDataUri) return "";
-    const parts = fileDataUri.split(',');
-    return parts.length > 1 ? parts[1] : parts[0];
-  }, [fileDataUri]);
-
-  return (
-    <div className="stagger-children max-w-5xl mx-auto space-y-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Base64 Encoder / Decoder</h1>
-          <p className="text-sm text-muted mt-2">
-            Encode and decode text or files to Base64 format instantly.
-          </p>
-        </div>
+    <section className="space-y-5 rounded-xl border border-border bg-card p-5 shadow-sm sm:p-6">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="flex rounded-lg border border-border bg-background p-1" role="group" aria-label="Input type"><Toggle active={mode === "text"} onClick={() => { setMode("text"); setFileBytes(null); }}>Text</Toggle><Toggle active={mode === "file"} onClick={() => { setMode("file"); setInput(action === "decode" ? BASE64_SAMPLE : ""); }}>File / binary</Toggle></div>
+        <div className="flex rounded-lg border border-border bg-background p-1" role="group" aria-label="Base64 action"><Toggle active={action === "encode"} onClick={() => selectAction("encode")}>Encode</Toggle><Toggle active={action === "decode"} onClick={() => selectAction("decode")}>Decode</Toggle></div>
+        <button type="button" onClick={reset} className="inline-flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm font-medium hover:bg-card-hover"><RotateCcw className="h-4 w-4" /> Reset</button>
       </div>
 
-      <div className="bg-card border border-border rounded-xl p-4 md:p-6 space-y-6">
-        
-        {/* Mode & Action Selectors */}
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          {/* Mode Tabs */}
-          <div className="flex items-center gap-1 bg-input rounded-lg p-1 border border-border w-max">
-            <button
-              onClick={() => { setMode("text"); setInput(""); }}
-              className={`px-4 py-2 text-sm font-semibold rounded-md transition-colors ${
-                mode === "text" ? "bg-card text-foreground shadow-sm" : "text-muted hover:text-foreground"
-              }`}
-            >
-              Text Mode
-            </button>
-            <button
-              onClick={() => setMode("file")}
-              className={`px-4 py-2 text-sm font-semibold rounded-md transition-colors ${
-                mode === "file" ? "bg-card text-foreground shadow-sm" : "text-muted hover:text-foreground"
-              }`}
-            >
-              File / Image Mode
-            </button>
-          </div>
+      {action === "encode" && <div className="grid gap-4 rounded-lg border border-border bg-background p-4 sm:grid-cols-2"><label className="space-y-2"><span className="text-sm font-medium">Alphabet</span><select className={fieldClass} value={variant} onChange={(event) => setVariant(event.target.value as Base64Variant)}><option value="standard">Standard Base64 (+ and /)</option><option value="url">URL-safe Base64 (- and _)</option></select></label><label className="flex items-center gap-2 self-end rounded-lg border border-border px-3 py-2 text-sm"><input type="checkbox" checked={includePadding} onChange={(event) => setIncludePadding(event.target.checked)} /> Include = padding</label></div>}
 
-          {/* Encode / Decode Toggle (Text mode only) */}
-          {mode === "text" && (
-            <div className="flex items-center gap-1 bg-input rounded-lg p-1 border border-border w-max">
-               <button
-                onClick={() => setAction("encode")}
-                className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-colors ${
-                  action === "encode" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted hover:text-foreground"
-                }`}
-              >
-                Encode
-              </button>
-              <button
-                onClick={() => setAction("decode")}
-                className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-colors ${
-                  action === "decode" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted hover:text-foreground"
-                }`}
-              >
-                Decode
-              </button>
-            </div>
-          )}
-        </div>
+      {mode === "text" ? <TextWorkspace action={action} input={input} setInput={setInput} output={textResult.output} error={textResult.error} onPaste={paste} onSample={loadSample} /> : action === "encode" ? <div className="grid gap-6 lg:grid-cols-2"><div role="button" tabIndex={0} onClick={() => fileInputRef.current?.click()} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") fileInputRef.current?.click(); }} onDragOver={(event) => { event.preventDefault(); setIsDragging(true); }} onDragLeave={() => setIsDragging(false)} onDrop={(event) => { event.preventDefault(); setIsDragging(false); void readFile(event.dataTransfer.files[0]); }} className={`flex min-h-72 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed p-8 text-center ${isDragging ? "border-primary bg-primary-soft" : "border-border bg-code-bg hover:border-primary"}`}><FileUp className="mb-4 h-10 w-10 text-primary" /><strong>Choose or drop a file</strong><p className="mt-2 text-sm text-muted">Any binary format, up to {formatBytes(MAX_BASE64_FILE_BYTES)}</p><input ref={fileInputRef} type="file" className="sr-only" onChange={(event) => { void readFile(event.target.files?.[0]); event.currentTarget.value = ""; }} /></div><FileEncodeResult bytes={fileBytes} base64={fileEncoded} fileName={fileName} mimeType={mimeType} previewUri={previewUri} onDownload={downloadEncoded} /></div> : <FileDecodeWorkspace input={input} setInput={setInput} decoded={fileDecoded} fileName={fileName} setFileName={setFileName} mimeType={effectiveMime} setMimeType={setMimeType} previewUri={previewUri} onPaste={paste} onSample={loadSample} onDownload={downloadDecoded} />}
 
-        {/* Workspaces */}
-        {mode === "text" ? (
-          <div className="grid gap-4 md:grid-cols-2 h-[350px]">
-             {/* Left Text Input */}
-             <div className="flex flex-col border border-border rounded-xl overflow-hidden bg-code-bg">
-               <div className="bg-sidebar border-b border-border px-4 py-2 flex items-center justify-between">
-                 <span className="text-xs font-mono text-muted">{action === "encode" ? "Plain Text Input" : "Base64 Input"}</span>
-                 {input && <button onClick={() => setInput("")} className="text-[10px] text-muted hover:text-foreground">Clear</button>}
-               </div>
-               <textarea
-                 value={input}
-                 onChange={(e) => setInput(e.target.value)}
-                 placeholder={action === "encode" ? "Enter text to encode..." : "Paste Base64 here..."}
-                 className="flex-1 w-full bg-transparent p-4 font-mono text-sm text-foreground outline-none resize-none leading-relaxed"
-                 spellCheck={false}
-               />
-               {textError && <div className="bg-danger/10 text-danger text-xs px-4 py-2 border-t border-danger/20">{textError}</div>}
-             </div>
-
-             {/* Right Text Output */}
-             <div className="flex flex-col border border-border rounded-xl overflow-hidden bg-code-bg">
-               <div className="bg-sidebar border-b border-border px-4 py-2 flex items-center justify-between">
-                 <span className="text-xs font-mono text-muted">{action === "encode" ? "Base64 Output" : "Plain Text Output"}</span>
-                 <CopyButton text={textOutput} size="sm" label="Kopyala" />
-               </div>
-               <textarea
-                 value={textOutput}
-                 readOnly
-                 placeholder="Result will appear here..."
-                 className="flex-1 w-full bg-transparent p-4 font-mono text-sm text-foreground outline-none resize-none leading-relaxed"
-                 spellCheck={false}
-               />
-             </div>
-          </div>
-        ) : (
-          /* File Mode Workspace */
-          <div className="grid gap-6 md:grid-cols-2">
-             <div 
-               onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
-               onDragLeave={() => setIsDragging(false)}
-               onDrop={handleDrop}
-               onClick={() => fileInputRef.current?.click()}
-               className={`flex flex-col items-center justify-center p-8 rounded-xl border-2 border-dashed cursor-pointer transition-all duration-200 h-[300px]
-                 ${isDragging ? "border-primary bg-primary/5 scale-[0.99]" : "border-border bg-code-bg hover:border-primary/50 hover:bg-black/5 dark:hover:bg-white/5"}
-               `}
-             >
-               <input 
-                 type="file" 
-                 ref={fileInputRef} 
-                 onChange={(e) => { if (e.target.files?.[0]) handleFileChange(e.target.files[0]); }} 
-                 className="hidden" 
-               />
-               <svg className={`h-12 w-12 mb-4 transition-colors ${isDragging ? "text-primary" : "text-muted"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-               </svg>
-               <p className="text-foreground font-semibold mb-1">Dosya seçin veya sürükleyin</p>
-               <p className="text-xs text-muted text-center max-w-[250px]">
-                 Tüm dosyalar desteklenir. Tarayıcıda (client-side) güvenle işlenir.
-               </p>
-             </div>
-
-             <div className="flex flex-col border border-border rounded-xl overflow-hidden bg-code-bg h-[300px]">
-               <div className="bg-sidebar border-b border-border px-4 py-2 flex items-center justify-between">
-                 <span className="text-xs font-mono text-muted">Data URI (Base64)</span>
-                 <CopyButton text={rawFileBase64} size="sm" label="Kopyala" />
-               </div>
-               
-               {fileDataUri ? (
-                 <div className="flex-1 flex flex-col p-4 overflow-hidden">
-                    <div className="mb-3 text-sm font-semibold text-foreground truncate">{fileName}</div>
-                    
-                    {fileDataUri.startsWith("data:image") ? (
-                      <div className="flex-1 bg-black/5 dark:bg-white/5 rounded-lg border border-border flex items-center justify-center p-2 mb-3 overflow-hidden">
-                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                         <img src={fileDataUri} alt="Preview" className="max-w-full max-h-full object-contain rounded-md" />
-                      </div>
-                    ) : (
-                      <textarea
-                        value={rawFileBase64}
-                        readOnly
-                        className="flex-1 w-full bg-transparent font-mono text-xs text-muted outline-none resize-none mb-3 break-all"
-                        spellCheck={false}
-                      />
-                    )}
-                 </div>
-               ) : (
-                 <div className="flex-1 flex items-center justify-center text-muted text-sm p-4 text-center">
-                   Dosya yüklendiğinde Base64 çıktısı burada görünecek.
-                 </div>
-               )}
-             </div>
-          </div>
-        )}
-
-        {/* Stats Footer */}
-        {stats && (
-          <div className="flex items-center gap-6 px-2 py-1 text-xs text-muted font-mono animate-in fade-in">
-             <div className="flex items-center gap-2">
-               <span className="text-foreground">Karakter:</span> {stats.charCount}
-             </div>
-             <div className="flex items-center gap-2">
-               <span className="text-foreground">Yaklaşık Boyut:</span> {stats.formattedSize}
-             </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
+      {actionError && <p className="rounded-lg border border-danger/30 bg-danger/5 p-3 text-sm text-danger" role="alert">{actionError}</p>}
+      <p className="text-xs leading-relaxed text-muted">Processing stays in this browser. Text and files are never uploaded. Base64 increases binary size by roughly one third and provides no encryption or secrecy.</p>
+    </section>
+  </main>;
 }
+
+function Toggle({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) { return <button type="button" aria-pressed={active} onClick={onClick} className={`rounded-md px-4 py-2 text-sm font-semibold ${active ? "bg-primary text-primary-foreground" : "text-muted hover:bg-card-hover hover:text-foreground"}`}>{children}</button>; }
+
+function TextWorkspace({ action, input, setInput, output, error, onPaste, onSample }: { action: "encode" | "decode"; input: string; setInput: (value: string) => void; output: string; error: string | null; onPaste: () => void; onSample: () => void }) {
+  return <div className="grid gap-4 lg:grid-cols-2"><Editor title={action === "encode" ? "UTF-8 text" : "Base64 input"} value={input} onChange={setInput} actions={<><button type="button" onClick={onPaste}>Paste</button><button type="button" onClick={onSample}>Sample</button><button type="button" onClick={() => setInput("")}>Clear</button></>} /><Editor title={action === "encode" ? "Base64 output" : "Decoded UTF-8 text"} value={error ? "" : output} readOnly actions={<><CopyButton text={error ? "" : output} label="output" size="sm" />{output && <button type="button" onClick={() => downloadBlob(new Blob([output], { type: "text/plain;charset=utf-8" }), action === "encode" ? "base64.txt" : "decoded.txt")}><Download className="h-4 w-4" /> Download</button>}</>} />{error && <p className="rounded-lg border border-danger/30 bg-danger/5 p-3 text-sm text-danger lg:col-span-2" role="alert">{error}</p>}<div className="flex flex-wrap gap-4 text-xs text-muted lg:col-span-2"><span>Input: {formatBytes(new TextEncoder().encode(input).length)}</span>{!error && <span>Output: {formatBytes(new TextEncoder().encode(output).length)}</span>}</div></div>;
+}
+
+function Editor({ title, value, onChange, readOnly = false, actions }: { title: string; value: string; onChange?: (value: string) => void; readOnly?: boolean; actions: React.ReactNode }) { return <div className="flex min-h-80 flex-col overflow-hidden rounded-xl border border-border bg-code-bg"><div className="flex flex-wrap items-center justify-between gap-2 border-b border-border bg-sidebar px-4 py-2"><span className="text-xs font-mono text-muted">{title}</span><div className="flex items-center gap-3 text-xs font-medium text-primary [&_button]:inline-flex [&_button]:items-center [&_button]:gap-1">{actions}</div></div><textarea aria-label={title} value={value} onChange={(event) => onChange?.(event.target.value)} readOnly={readOnly} className="min-h-0 flex-1 resize-none bg-transparent p-4 font-mono text-sm leading-relaxed outline-none" spellCheck={false} /></div>; }
+
+function FileEncodeResult({ bytes, base64, fileName, mimeType, previewUri, onDownload }: { bytes: Uint8Array | null; base64: string; fileName: string; mimeType: string; previewUri: string | null; onDownload: () => void }) { return <div className="min-h-72 rounded-xl border border-border bg-code-bg p-4">{bytes ? <div className="space-y-4"><div><strong className="break-all">{fileName}</strong><p className="text-xs text-muted">{mimeType} · {formatBytes(bytes.length)} → {base64.length.toLocaleString()} characters</p></div>{previewUri && <div className="flex h-32 items-center justify-center rounded-lg border border-border bg-background p-2"><Image unoptimized src={previewUri} alt="Selected file preview" width={512} height={256} className="max-h-full max-w-full object-contain" /></div>}<textarea aria-label="Encoded file Base64" className="h-28 w-full resize-none rounded-lg border border-border bg-background p-3 font-mono text-xs" readOnly value={base64} /><div className="flex flex-wrap gap-2"><CopyButton text={base64} label="raw Base64" /><CopyButton text={toDataUri(encodeBytes(bytes), mimeType)} label="data URI" /><button type="button" onClick={onDownload} className="inline-flex items-center gap-2 rounded-lg border border-border px-3 py-1.5 text-sm font-medium hover:bg-card-hover"><Download className="h-4 w-4" /> Download .txt</button></div></div> : <p className="flex h-full items-center justify-center text-center text-sm text-muted">Select a file to create raw Base64 and a MIME data URI.</p>}</div>; }
+
+function FileDecodeWorkspace({ input, setInput, decoded, fileName, setFileName, mimeType, setMimeType, previewUri, onPaste, onSample, onDownload }: { input: string; setInput: (value: string) => void; decoded: ReturnType<typeof decodeBase64> | null; fileName: string; setFileName: (value: string) => void; mimeType: string; setMimeType: (value: string) => void; previewUri: string | null; onPaste: () => void; onSample: () => void; onDownload: () => void }) { return <div className="grid gap-4 lg:grid-cols-2"><Editor title="Raw Base64 or data URI" value={input} onChange={(value) => { if (value.length <= MAX_BASE64_TEXT_BYTES) setInput(value); }} actions={<><button type="button" onClick={onPaste}>Paste</button><button type="button" onClick={onSample}>Sample</button><button type="button" onClick={() => setInput("")}>Clear</button></>} /><div className="space-y-4 rounded-xl border border-border bg-code-bg p-4"><div className="grid gap-3 sm:grid-cols-2"><label className="space-y-1"><span className="text-xs font-medium">Download filename</span><input className={fieldClass} value={fileName} onChange={(event) => setFileName(event.target.value)} /></label><label className="space-y-1"><span className="text-xs font-medium">Media type</span><input className={fieldClass} value={mimeType} disabled={Boolean(decoded?.isDataUri)} onChange={(event) => setMimeType(event.target.value)} /></label></div>{decoded?.error ? <p className="rounded-lg border border-danger/30 bg-danger/5 p-3 text-sm text-danger" role="alert">{decoded.error}</p> : decoded && <><div className="rounded-lg border border-border bg-background p-4"><p className="font-semibold">Ready to download</p><p className="mt-1 text-sm text-muted">{formatBytes(decoded.bytes.length)} · {decoded.variant === "url" ? "URL-safe" : "standard"} Base64{decoded.isDataUri ? " · data URI media type detected" : ""}</p></div>{previewUri && <div className="flex h-36 items-center justify-center rounded-lg border border-border bg-background p-2"><Image unoptimized src={previewUri} alt="Decoded image preview" width={512} height={288} className="max-h-full max-w-full object-contain" /></div>}<button type="button" onClick={onDownload} className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 font-semibold text-primary-foreground"><Download className="h-4 w-4" /> Download decoded file</button></>}</div></div>; }

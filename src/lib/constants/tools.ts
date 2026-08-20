@@ -145,14 +145,15 @@ export const TOOLS: Tool[] = [
   },
   {
     id: "hash-generator",
-    name: "Hash Generator",
+    name: "Hash Generator & Checksum Verifier",
     description:
-      "Generate MD5, SHA-1, SHA-256, SHA-512, and bcrypt hashes simultaneously. File hashing support. Verify mode to check if text matches a known hash.",
-    shortDescription: "MD5, SHA-256, bcrypt tek tabloda",
+      "Hash text or local files with MD5, SHA-1, SHA-256, SHA-512 and bcrypt. Choose hex or Base64, verify expected checksums automatically, and download a report.",
+    shortDescription: "Metin/dosya hash üret, checksum doğrula",
     category: "generators",
     path: "/tools/hash-generator",
-    seoKeyword: "sha256 hash generator",
+    seoKeyword: "hash generator checksum verifier",
     icon: "#️⃣",
+    isPopular: true,
   },
   {
     id: "css-gradient-generator",

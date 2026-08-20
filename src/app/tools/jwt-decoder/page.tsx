@@ -1,47 +1,32 @@
 import type { Metadata } from "next";
-import { buildPageMeta } from "@/lib/constants/seo";
+import Link from "next/link";
+import { SITE_CONFIG, buildPageMeta } from "@/lib/constants/seo";
 import { JwtDecoderClient } from "./JwtDecoderClient";
 
-export const metadata: Metadata = buildPageMeta({
-  title: "JWT Decoder",
-  description:
-    "Decode JSON Web Tokens (JWT) instantly. View headers, payloads, and signatures. 100% secure, client-side processing. Your tokens are never sent to a server.",
-  path: "/tools/jwt-decoder",
-});
+const path = "/tools/jwt-decoder";
+const description = "Strictly decode JWT header and payload data, inspect exp, nbf and iat timestamps, and learn which signature and trust checks are still required.";
+export const metadata: Metadata = buildPageMeta({ title: "JWT Decoder & Token Inspector — Claims and Expiry", description, path });
+const structuredData = { "@context": "https://schema.org", "@type": "WebApplication", name: "JWT Decoder and Token Inspector", url: `${SITE_CONFIG.url}${path}`, description, applicationCategory: "DeveloperApplication", operatingSystem: "Any", browserRequirements: "Requires JavaScript", offers: { "@type": "Offer", price: "0", priceCurrency: "USD" } };
 
 export default function JwtDecoderPage() {
-  return (
-    <>
-      <JwtDecoderClient />
+  return <>
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, "\\u003c") }} />
+    <nav aria-label="Breadcrumb" className="mx-auto mb-5 max-w-6xl text-sm text-muted"><Link className="hover:text-foreground" href="/">Home</Link><span aria-hidden="true"> / </span><Link className="hover:text-foreground" href="/tools">Developer tools</Link><span aria-hidden="true"> / </span><span aria-current="page">JWT Decoder</span></nav>
+    <JwtDecoderClient />
+    <div className="mx-auto mt-16 max-w-5xl border-t border-border pt-8 text-muted">
+      <section><h2 className="mb-3 text-xl font-semibold text-foreground">Inspect a JWT without confusing decoding and verification</h2><ol className="list-decimal space-y-2 pl-5 leading-relaxed"><li>Paste a compact token, load a local text file or use the safe demonstration value.</li><li>Resolve structural errors in the three Base64URL segments and confirm that header and payload decode to JSON objects.</li><li>Review the untrusted algorithm header, claims and browser-clock interpretation of <code>exp</code>, <code>nbf</code> and <code>iat</code>.</li><li>Copy individual sections or download an inspection report for debugging. Verify the original token in your trusted application before using any claim.</li></ol></section>
 
-      {/* SEO & Context Content */}
-      <div className="mt-16 mx-auto max-w-6xl pt-8 border-t border-border prose prose-sm dark:prose-invert">
-        <h2 className="text-lg font-semibold text-foreground mb-4">What is a JSON Web Token (JWT)?</h2>
-        <p className="text-muted leading-relaxed mb-6">
-          JSON Web Token (JWT) is an open standard (RFC 7519) that defines a compact and self-contained way for securely transmitting information between parties as a JSON object. 
-          This information can be verified and trusted because it is digitally signed. JWTs can be signed using a secret (with the HMAC algorithm) or a public/private key pair using RSA or ECDSA.
-        </p>
+      <section className="mt-10"><h2 className="mb-3 text-xl font-semibold text-foreground">JWT structure and trust boundaries</h2><div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"><Info title="Header">Base64URL-encoded JSON that commonly declares <code>alg</code>, <code>typ</code> and a key identifier. The header itself is attacker-controlled until verification succeeds.</Info><Info title="Payload">Base64URL-encoded JSON claims such as issuer, subject, audience and time constraints. Encoding makes these readable, not confidential.</Info><Info title="Signature">Cryptographically binds the signing input when verified with the correct algorithm and trusted key. Displaying its bytes does not verify it.</Info><Info title="exp">The expiration NumericDate. A verifier normally rejects a token at or after this time, subject to a deliberately configured clock tolerance.</Info><Info title="nbf">The token should not be accepted before this NumericDate. The inspector reports browser-clock status without inventing a tolerance.</Info><Info title="iat">The claimed issue time. It can help policy and replay checks but does not prove when a token was created unless the signature and issuer are trusted.</Info></div></section>
 
-        <h3 className="text-md font-semibold text-foreground mb-3">Structure of a JWT</h3>
-        <p className="text-muted leading-relaxed mb-4">
-          In its compact form, JSON Web Tokens consist of three parts separated by dots (<code>.</code>), which are:
-        </p>
-        
-        <ul className="space-y-3 text-muted list-none pl-0">
-          <li>
-            <strong className="text-danger">Header:</strong> 
-            Typically consists of two parts: the type of the token, which is JWT, and the signing algorithm being used, such as HMAC SHA256 or RSA.
-          </li>
-          <li>
-            <strong className="text-primary">Payload:</strong> 
-            Contains the claims. Claims are statements about an entity (typically, the user) and additional data. There are three types of claims: registered, public, and private claims.
-          </li>
-          <li>
-            <strong className="text-info">Signature:</strong> 
-            To create the signature part you have to take the encoded header, the encoded payload, a secret, the algorithm specified in the header, and sign that.
-          </li>
-        </ul>
-      </div>
-    </>
-  );
+      <section className="mt-10"><h2 className="mb-3 text-xl font-semibold text-foreground">What production verification must check</h2><div className="rounded-xl border border-warning/30 bg-warning/5 p-4"><h3 className="font-semibold text-foreground">Do not authorize from decoded output</h3><p className="mt-2 leading-relaxed">A complete verifier must use a maintained JWT library, allow only the algorithm your application expects, select a trusted key, validate the signature and enforce issuer, audience, expiry, not-before and application-specific claims. Never select a verification algorithm solely because the untrusted header asks for it.</p></div><p className="mt-4 leading-relaxed">An <code>alg: none</code> token is unsigned. HMAC algorithms share a secret, while RSA and elliptic-curve algorithms normally verify with a public key. Key rotation, <code>kid</code> lookup, JWKS caching, clock skew and replay controls belong in the relying application, not a browser decoder.</p></section>
+
+      <section className="mt-10"><h2 className="mb-3 text-xl font-semibold text-foreground">Privacy and safe debugging</h2><p className="leading-relaxed">Decoding, time comparison, file reading and report creation happen in browser memory. The tool does not send the token for verification. Even so, a bearer token may grant access to an account and its payload may expose personal data. Prefer revoked or synthetic tokens, close shared-browser sessions and remove tokens from logs, screenshots, tickets and chat messages.</p><p className="mt-4 leading-relaxed">Input is limited to 100,000 characters for responsive inspection. The decoder requires unpadded canonical Base64URL, valid UTF-8 JSON objects and exactly three compact segments. It does not accept encrypted five-part JWE values.</p></section>
+
+      <section className="mt-10"><h2 className="mb-3 text-xl font-semibold text-foreground">Frequently asked questions</h2><div className="space-y-5"><Info title="Does a readable JWT mean it is valid?">No. Anyone can construct readable header and payload segments. Only trusted signature and policy verification can establish whether your application should accept the token.</Info><Info title="Why does the tool say the time window is active?">It only compares NumericDate claims with this browser clock. It does not verify the signature, issuer, audience, clock accuracy or the tolerance used by your server.</Info><Info title="Why is my token rejected?">Common causes are the wrong number of segments, whitespace, standard Base64 characters or padding, non-canonical Base64URL, invalid UTF-8, non-object JSON, a missing <code>alg</code> or an invalid signature segment.</Info><Info title="Can this decode JWE encrypted tokens?">No. A compact JWE has five segments and requires decryption keys and algorithm-specific processing. This page intentionally handles three-part signed or unsecured JWT/JWS structures only.</Info></div></section>
+
+      <section className="mt-10"><h2 className="mb-3 text-xl font-semibold text-foreground">Related security and encoding tools</h2><div className="flex flex-wrap gap-3"><Link className="rounded-lg border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground hover:bg-card-hover" href="/tools/base64-encoder">Base64 Encoder &amp; Decoder</Link><Link className="rounded-lg border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground hover:bg-card-hover" href="/tools/hash-generator">Hash &amp; Checksum Tool</Link><Link className="rounded-lg border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground hover:bg-card-hover" href="/tools/timestamp-converter">Timestamp Converter</Link></div></section>
+    </div>
+  </>;
 }
+
+function Info({ title, children }: { title: string; children: React.ReactNode }) { return <div className="rounded-xl border border-border bg-card p-4"><h3 className="font-semibold text-foreground">{title}</h3><p className="mt-2 text-sm leading-relaxed">{children}</p></div>; }

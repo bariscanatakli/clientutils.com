@@ -134,13 +134,13 @@ export const TOOLS: Tool[] = [
   },
   {
     id: "jwt-decoder",
-    name: "JWT Decoder",
+    name: "JWT Decoder & Token Inspector",
     description:
-      "Decode JWT tokens and inspect Header, Payload, and Signature with color-coded sections. Check expiration status and standard claim descriptions.",
-    shortDescription: "JWT Header, Payload, Signature renk kodlu çözme",
+      "Strictly decode JWT header and payload data, inspect NumericDate claims, and distinguish readable token content from trusted signature verification.",
+    shortDescription: "JWT yapısını ve zaman claim'lerini güvenli biçimde incele",
     category: "encoders",
     path: "/tools/jwt-decoder",
-    seoKeyword: "jwt decoder",
+    seoKeyword: "jwt decoder token inspector claims expiry",
     icon: "🎟️",
   },
   {

@@ -201,13 +201,13 @@ export const TOOLS: Tool[] = [
   },
   {
     id: "xml-to-json",
-    name: "XML to JSON Converter",
+    name: "XML to JSON for JavaScript",
     description:
-      "Convert XML to JSON and JSON to XML instantly. Handles large files without browser freezing using optimized parsing.",
-    shortDescription: "XML ↔ JSON dönüşümü, büyük dosya desteği",
+      "Convert XML to JSON or JavaScript locally. Preserve attributes, namespaces, arrays, comments, declarations or exact node order, then copy or download the result.",
+    shortDescription: "XML → JSON/JavaScript, attributes and arrays",
     category: "converters",
     path: "/tools/xml-json",
-    seoKeyword: "convert xml to json",
+    seoKeyword: "xml to json javascript",
     icon: "📄",
   },
   {

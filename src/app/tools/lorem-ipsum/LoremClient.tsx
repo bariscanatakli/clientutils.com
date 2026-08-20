@@ -20,6 +20,9 @@ const STANDARD_START = "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
 
 type UnitType = "paragraphs" | "sentences" | "words";
 
+const getRandomWord = () => LOREM_WORDS[Math.floor(Math.random() * LOREM_WORDS.length)];
+const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
+
 export default function LoremClient() {
   const [unit, setUnit] = useState<UnitType>("paragraphs");
   const [count, setCount] = useState(3);
@@ -28,11 +31,7 @@ export default function LoremClient() {
   const [generatedText, setGeneratedText] = useState("");
   const [copyState, setCopyState] = useState<CopyState>({ copied: false, text: "" });
 
-  const getRandomWord = () => LOREM_WORDS[Math.floor(Math.random() * LOREM_WORDS.length)];
-  
-  const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
-
-  const generateSentence = (isFirst: boolean) => {
+  const generateSentence = useCallback((isFirst: boolean) => {
     // 5 to 15 words per sentence
     const wordCount = Math.floor(Math.random() * 10) + 5;
     let sentence = "";
@@ -57,9 +56,9 @@ export default function LoremClient() {
     }
     
     return sentence + ".";
-  };
+  }, [startWithLorem]);
 
-  const generateParagraph = (isFirst: boolean) => {
+  const generateParagraph = useCallback((isFirst: boolean) => {
     // 3 to 7 sentences per paragraph
     const sentenceCount = Math.floor(Math.random() * 4) + 3;
     const sentences = [];
@@ -69,7 +68,7 @@ export default function LoremClient() {
     }
     
     return sentences.join(" ");
-  };
+  }, [generateSentence]);
 
   const generateContent = useCallback(() => {
     let result = "";
@@ -113,11 +112,12 @@ export default function LoremClient() {
     }
 
     setGeneratedText(result);
-  }, [unit, count, startWithLorem, htmlFormat]);
+  }, [unit, count, startWithLorem, htmlFormat, generateParagraph, generateSentence]);
 
   // Generate on initial load or when settings change
   useEffect(() => {
-    generateContent();
+    const timer = window.setTimeout(generateContent, 0);
+    return () => window.clearTimeout(timer);
   }, [generateContent]);
 
   const handleCopy = async () => {
@@ -212,7 +212,7 @@ export default function LoremClient() {
                 <div className={`w-9 h-5 rounded-full transition-colors ${startWithLorem ? 'bg-primary' : 'bg-muted-foreground/30'}`}></div>
                 <div className={`absolute left-0.5 top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${startWithLorem ? 'translate-x-4' : 'translate-x-0'}`}></div>
               </div>
-              <span className="text-sm font-medium">Start with "Lorem ipsum..."</span>
+              <span className="text-sm font-medium">Start with &quot;Lorem ipsum...&quot;</span>
             </label>
 
             <label className="flex items-center gap-3 cursor-pointer group">

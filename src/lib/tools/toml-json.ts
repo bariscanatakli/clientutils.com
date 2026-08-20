@@ -23,7 +23,7 @@ export function convertTomlJson(input: string, mode: TomlJsonMode): TomlJsonResu
       const tomlString = toml.stringify(parsedJson);
       return { data: tomlString, error: null };
     }
-  } catch (err: any) {
-    return { data: "", error: err.message || "Invalid format" };
+  } catch (error: unknown) {
+    return { data: "", error: error instanceof Error ? error.message : "Invalid format" };
   }
 }

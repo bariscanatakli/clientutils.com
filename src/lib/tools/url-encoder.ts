@@ -1,7 +1,7 @@
 export function encodeUrl(url: string): string {
   try {
     return encodeURIComponent(url);
-  } catch (err) {
+  } catch {
     return "";
   }
 }
@@ -9,7 +9,7 @@ export function encodeUrl(url: string): string {
 export function decodeUrl(url: string): { data: string; error: string | null } {
   try {
     return { data: decodeURIComponent(url), error: null };
-  } catch (err) {
+  } catch {
     return { data: url, error: "Geçersiz URL formatı veya escape karakteri." };
   }
 }

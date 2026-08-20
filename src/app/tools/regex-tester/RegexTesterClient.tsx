@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useMemo } from "react";
 import { testRegex } from "@/lib/tools/regex-tester";
 
 const INITIAL_TEXT = `Welcome to the Regex Tester!

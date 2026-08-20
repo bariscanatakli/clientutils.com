@@ -26,19 +26,20 @@ export function HashGeneratorClient() {
   useEffect(() => {
     if (mode !== "generate") return;
     
-    if (!input) {
-      setHashes([
-        { algorithm: "MD5", hash: "" },
-        { algorithm: "SHA-1", hash: "" },
-        { algorithm: "SHA-256", hash: "" },
-        { algorithm: "SHA-512", hash: "" },
-        { algorithm: "bcrypt", hash: "" },
-      ]);
-      return;
-    }
-
-    setIsHashing(true);
     const timer = setTimeout(async () => {
+      if (!input) {
+        setHashes([
+          { algorithm: "MD5", hash: "" },
+          { algorithm: "SHA-1", hash: "" },
+          { algorithm: "SHA-256", hash: "" },
+          { algorithm: "SHA-512", hash: "" },
+          { algorithm: "bcrypt", hash: "" },
+        ]);
+        setIsHashing(false);
+        return;
+      }
+
+      setIsHashing(true);
       const results = await generateHashes(input);
       setHashes(results);
       setIsHashing(false);

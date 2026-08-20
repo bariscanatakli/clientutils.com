@@ -9,7 +9,7 @@ export function minifyJson(input: string): JsonMinifyResult {
   try {
     const parsed = JSON.parse(input);
     return { data: JSON.stringify(parsed), error: null };
-  } catch (err: any) {
-    return { data: "", error: err.message || "Invalid JSON" };
+  } catch (error: unknown) {
+    return { data: "", error: error instanceof Error ? error.message : "Invalid JSON" };
   }
 }

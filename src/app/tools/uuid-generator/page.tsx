@@ -31,7 +31,7 @@ export default function UuidGeneratorPage() {
           </li>
           <li>
             <strong className="text-foreground">UUID v1 (Time-based):</strong> 
-            Generated using a combination of the computer's MAC address and the current time. Useful if you need to know exactly when and where the UUID was generated.
+            Generated using a combination of the computer&apos;s MAC address and the current time. Useful if you need to know exactly when and where the UUID was generated.
           </li>
           <li>
             <strong className="text-foreground">UUID v7 (Time-ordered):</strong> 
@@ -42,7 +42,7 @@ export default function UuidGeneratorPage() {
         <h3 className="text-md font-semibold text-foreground mt-6 mb-3">What is a ULID?</h3>
         <p className="text-muted leading-relaxed mb-6">
           A Universally Unique Lexicographically Sortable Identifier (ULID) is an alternative to UUID. 
-          It is 26 characters long (compared to 36 for UUID), uses Crockford's Base32 alphabet (no ambiguous characters like I, L, O, U), 
+          It is 26 characters long (compared to 36 for UUID), uses Crockford&apos;s Base32 alphabet (no ambiguous characters like I, L, O, U), 
           and is lexicographically sortable by time. It provides 1.21e+24 unique ULIDs per millisecond.
         </p>
       </div>

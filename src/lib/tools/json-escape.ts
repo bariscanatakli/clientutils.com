@@ -20,7 +20,7 @@ export function escapeJson(input: string, mode: EscapeMode): JsonEscapeResult {
       const parsed = JSON.parse(`"${input}"`);
       return { data: parsed, error: null };
     }
-  } catch (err: any) {
-    return { data: "", error: err.message || "Invalid syntax" };
+  } catch (error: unknown) {
+    return { data: "", error: error instanceof Error ? error.message : "Invalid syntax" };
   }
 }

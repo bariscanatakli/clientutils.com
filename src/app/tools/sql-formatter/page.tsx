@@ -30,7 +30,7 @@ export default function SqlFormatterPage() {
           <li><strong>Standard SQL:</strong> The baseline ISO standard syntax.</li>
           <li><strong>PostgreSQL:</strong> Supports Postgres-specific features like array operators and JSONB functions.</li>
           <li><strong>MySQL & MariaDB:</strong> Handles backtick quoting and specific function syntaxes.</li>
-          <li><strong>T-SQL:</strong> Microsoft SQL Server's proprietary extension.</li>
+          <li><strong>T-SQL:</strong> Microsoft SQL Server&apos;s proprietary extension.</li>
         </ul>
       </div>
     </>

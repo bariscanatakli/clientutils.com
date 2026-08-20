@@ -62,7 +62,7 @@ export function convertBases(input: string, sourceFormat: BaseFormat): Record<Ba
     result.octal = octArr.join(" ");
     result.decimal = decArr.join(" ");
 
-  } catch (err) {
+  } catch {
     // Return empty on parse error
   }
 

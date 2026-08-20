@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { GradientConfig, GradientType, ColorStop, generateGradientCSS, generateTailwindClass } from "@/lib/tools/css-gradient";
+import { GradientConfig, GradientType, generateGradientCSS, generateTailwindClass } from "@/lib/tools/css-gradient";
 import { CopyButton } from "@/components/ui/CopyButton";
 
 export function CssGradientClient() {
@@ -190,7 +190,7 @@ export function CssGradientClient() {
                     <label className="text-xs font-semibold text-muted uppercase tracking-wider">Shape</label>
                     <select 
                       value={config.shape} 
-                      onChange={(e) => setConfig(prev => ({ ...prev, shape: e.target.value as any }))}
+                      onChange={(e) => setConfig(prev => ({ ...prev, shape: e.target.value as GradientConfig["shape"] }))}
                       className="w-full bg-input border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:ring-1 focus:ring-primary outline-none"
                     >
                       <option value="circle">Circle</option>

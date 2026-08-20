@@ -43,7 +43,8 @@ export default function PasswordGeneratorClient() {
 
   // Generate initial password on mount
   useEffect(() => {
-    generatePassword();
+    const timer = window.setTimeout(generatePassword, 0);
+    return () => window.clearTimeout(timer);
   }, [generatePassword]);
 
   const handleCopy = async () => {

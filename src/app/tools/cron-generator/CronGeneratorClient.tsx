@@ -42,11 +42,11 @@ export function CronGeneratorClient() {
         
         {/* Editor Settings */}
         <div className="bg-card border border-border rounded-xl p-6 space-y-6">
-          <FieldEditor label="Minute (0-59)" field="minute" value={config.minute} onChange={(v) => setConfig({ ...config, minute: v })} />
-          <FieldEditor label="Hour (0-23)" field="hour" value={config.hour} onChange={(v) => setConfig({ ...config, hour: v })} />
-          <FieldEditor label="Day of Month (1-31)" field="dayOfMonth" value={config.dayOfMonth} onChange={(v) => setConfig({ ...config, dayOfMonth: v })} />
-          <FieldEditor label="Month (1-12)" field="month" value={config.month} onChange={(v) => setConfig({ ...config, month: v })} />
-          <FieldEditor label="Day of Week (0-6)" field="dayOfWeek" value={config.dayOfWeek} onChange={(v) => setConfig({ ...config, dayOfWeek: v })} />
+          <FieldEditor label="Minute (0-59)" value={config.minute} onChange={(v) => setConfig({ ...config, minute: v })} />
+          <FieldEditor label="Hour (0-23)" value={config.hour} onChange={(v) => setConfig({ ...config, hour: v })} />
+          <FieldEditor label="Day of Month (1-31)" value={config.dayOfMonth} onChange={(v) => setConfig({ ...config, dayOfMonth: v })} />
+          <FieldEditor label="Month (1-12)" value={config.month} onChange={(v) => setConfig({ ...config, month: v })} />
+          <FieldEditor label="Day of Week (0-6)" value={config.dayOfWeek} onChange={(v) => setConfig({ ...config, dayOfWeek: v })} />
         </div>
 
         {/* Results */}
@@ -95,7 +95,7 @@ function PresetButton({ label, config, current, onSelect }: { label: string, con
   );
 }
 
-function FieldEditor({ label, field, value, onChange }: { label: string, field: string, value: string, onChange: (v: string) => void }) {
+function FieldEditor({ label, value, onChange }: { label: string, value: string, onChange: (v: string) => void }) {
   return (
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border/50 pb-4 last:border-0 last:pb-0">
       <label className="text-sm font-medium text-foreground min-w-[150px]">{label}</label>

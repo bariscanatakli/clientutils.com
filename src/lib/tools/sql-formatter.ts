@@ -19,7 +19,7 @@ export function formatSQL(query: string, config: SqlFormatConfig): string {
       tabWidth: config.tabWidth,
       linesBetweenQueries: config.linesBetweenQueries,
     });
-  } catch (err) {
+  } catch {
     // If it fails to parse/format, we just return original to prevent crashing
     return query;
   }

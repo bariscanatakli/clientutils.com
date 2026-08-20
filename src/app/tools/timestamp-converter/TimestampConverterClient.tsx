@@ -1,32 +1,38 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { timestampToDate, dateToTimestamp, detectMilliseconds } from "@/lib/tools/timestamp-converter";
+import { timestampToDate, dateToTimestamp } from "@/lib/tools/timestamp-converter";
 import { CopyButton } from "@/components/ui/CopyButton";
 
 export function TimestampConverterClient() {
-  const [currentEpoch, setCurrentEpoch] = useState<number>(Math.floor(Date.now() / 1000));
+  const [currentEpoch, setCurrentEpoch] = useState<number>(0);
   
   const [inputEpoch, setInputEpoch] = useState<string>("");
   const [inputDateStr, setInputDateStr] = useState<string>("");
 
   // Live timer for current epoch
   useEffect(() => {
-    const timer = setInterval(() => {
+    const updateCurrentEpoch = () => {
       setCurrentEpoch(Math.floor(Date.now() / 1000));
-    }, 1000);
-    return () => clearInterval(timer);
+    };
+    const initialTimer = window.setTimeout(updateCurrentEpoch, 0);
+    const timer = window.setInterval(updateCurrentEpoch, 1000);
+    return () => {
+      window.clearTimeout(initialTimer);
+      window.clearInterval(timer);
+    };
   }, []);
 
   // Set initial input
   useEffect(() => {
-    const now = new Date();
-    setInputEpoch(Math.floor(now.getTime() / 1000).toString());
-    
-    // Format YYYY-MM-DDTHH:mm for datetime-local input
-    const pad = (n: number) => n.toString().padStart(2, "0");
-    const localDateTime = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
-    setInputDateStr(localDateTime);
+    const timer = window.setTimeout(() => {
+      const now = new Date();
+      setInputEpoch(Math.floor(now.getTime() / 1000).toString());
+      const pad = (n: number) => n.toString().padStart(2, "0");
+      const localDateTime = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+      setInputDateStr(localDateTime);
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   // Handle epoch changes -> update date formats

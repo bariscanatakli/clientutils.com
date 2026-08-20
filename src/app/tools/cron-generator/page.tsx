@@ -37,7 +37,7 @@ export default function CronGeneratorPage() {
           <li><strong>Asterisk (*):</strong> Specifies all possible values for a field. For example, an asterisk in the hour time field would be equivalent to every hour.</li>
           <li><strong>Comma (,):</strong> Specifies a list of values. For example: `1,5,10`.</li>
           <li><strong>Dash (-):</strong> Specifies a range of values. For example: `1-5`.</li>
-          <li><strong>Slash (/):</strong> Specifies increments. For example, `*/5` in the minute field means "every 5 minutes".</li>
+          <li><strong>Slash (/):</strong> Specifies increments. For example, <code>*/5</code> in the minute field means &quot;every 5 minutes&quot;.</li>
         </ul>
       </div>
     </>

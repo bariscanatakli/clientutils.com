@@ -21,10 +21,12 @@ export function UuidGeneratorClient() {
 
   // Generate on mount or when options change (only if count is small, otherwise wait for button)
   useEffect(() => {
-    if (count <= 10) {
-      handleGenerate();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const timer = window.setTimeout(() => {
+      if (count <= 10) {
+        setResults(generateIdentifiers({ type, count, uppercase, hyphens }));
+      }
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [type, count, uppercase, hyphens]);
 
   const joinedResults = useMemo(() => results.join("\n"), [results]);

@@ -29,7 +29,7 @@ export default function BcryptClient() {
         const salt = bcrypt.genSaltSync(saltRounds);
         const hash = bcrypt.hashSync(textToHash, salt);
         setHashedResult(hash);
-      } catch (err) {
+      } catch {
         setHashedResult("Error generating hash");
       } finally {
         setIsHashing(false);
@@ -44,7 +44,7 @@ export default function BcryptClient() {
       try {
         const isValid = bcrypt.compareSync(verifyText, verifyHash);
         setVerifyResult(isValid);
-      } catch (err) {
+      } catch {
         setVerifyResult(false);
       } finally {
         setIsVerifying(false);

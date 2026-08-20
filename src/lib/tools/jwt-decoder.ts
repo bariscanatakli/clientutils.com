@@ -1,6 +1,6 @@
 export interface JwtPart {
   raw: string;
-  decoded: any | null;
+  decoded: Record<string, unknown> | string | null;
   error: string | null;
 }
 
@@ -37,12 +37,15 @@ function parseJwtPart(part: string): JwtPart {
   try {
     const decodedStr = base64UrlDecode(part);
     try {
-      const json = JSON.parse(decodedStr);
-      return { raw: part, decoded: json, error: null };
-    } catch (e) {
+      const json: unknown = JSON.parse(decodedStr);
+      const decoded = json !== null && typeof json === "object"
+        ? json as Record<string, unknown>
+        : String(json);
+      return { raw: part, decoded, error: null };
+    } catch {
       return { raw: part, decoded: decodedStr, error: "Invalid JSON format" };
     }
-  } catch (e) {
+  } catch {
     return { raw: part, decoded: null, error: "Invalid Base64 format" };
   }
 }
@@ -66,7 +69,12 @@ export function decodeJWT(token: string): JwtDecodeResult {
   const signature = parts[2];
 
   let isExpired = null;
-  if (payload.decoded && typeof payload.decoded === 'object' && payload.decoded.exp) {
+  if (
+    payload.decoded &&
+    typeof payload.decoded === "object" &&
+    "exp" in payload.decoded &&
+    typeof payload.decoded.exp === "number"
+  ) {
     const expTimeMs = payload.decoded.exp * 1000;
     isExpired = Date.now() > expTimeMs;
   }

@@ -87,7 +87,7 @@ export function LineSortClient() {
                <label className="text-xs font-semibold text-muted uppercase tracking-wider">Sort Order</label>
                <select 
                  value={config.sortOrder}
-                 onChange={(e) => setConfig({...config, sortOrder: e.target.value as any})}
+                 onChange={(e) => setConfig({...config, sortOrder: e.target.value as LineSortConfig["sortOrder"]})}
                  className="w-full bg-input border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                >
                  <option value="none">Original Order</option>

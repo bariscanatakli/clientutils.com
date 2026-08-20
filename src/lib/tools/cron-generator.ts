@@ -1,5 +1,5 @@
-import cronstrue from "cronstrue/i18n";
-const parser = require("cron-parser");
+import cronstrue from "cronstrue/i18n.js";
+import { CronExpressionParser } from "cron-parser";
 
 export interface CronConfig {
   minute: string;
@@ -20,7 +20,7 @@ export function generateCron(config: CronConfig): CronGeneratorResult {
   
   try {
     const desc = cronstrue.toString(expr, { locale: "en" });
-    const interval = parser.parseExpression(expr);
+    const interval = CronExpressionParser.parse(expr);
     
     const runs = [];
     for (let i = 0; i < 5; i++) {

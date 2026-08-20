@@ -14,7 +14,7 @@ export function JsonTree({ data, initiallyExpanded = true }: JsonTreeProps) {
   }
 
   if (typeof data === "string") {
-    return <span className="text-success font-mono text-sm break-words">"{data}"</span>;
+    return <span className="text-success font-mono text-sm break-words">&quot;{data}&quot;</span>;
   }
 
   if (typeof data === "number") {
@@ -108,7 +108,7 @@ function JsonObject({ obj, initiallyExpanded }: { obj: Record<string, unknown>; 
       >
         {entries.map(([key, value], index) => (
           <div key={key} className="flex group/item relative py-[1px]">
-            <span className="text-accent mr-2 whitespace-nowrap">"{key}":</span>
+            <span className="text-accent mr-2 whitespace-nowrap">&quot;{key}&quot;:</span>
             <div className="flex-1 min-w-0">
                <JsonTree data={value} initiallyExpanded={initiallyExpanded} />
                {index < entries.length - 1 && <span className="text-foreground">,</span>}

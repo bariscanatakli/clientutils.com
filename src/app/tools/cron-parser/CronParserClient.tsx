@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useMemo, useState } from "react";
 import { parseCronExpression } from "@/lib/tools/cron-parser";
 import { CopyButton } from "@/components/ui/CopyButton";
 
@@ -15,11 +15,7 @@ const PRESETS = [
 export function CronParserClient() {
   const [expression, setExpression] = useState("* * * * *");
   const [locale, setLocale] = useState<"tr" | "en">("tr");
-  const [result, setResult] = useState(parseCronExpression("* * * * *", "tr"));
-
-  useEffect(() => {
-    setResult(parseCronExpression(expression, locale));
-  }, [expression, locale]);
+  const result = useMemo(() => parseCronExpression(expression, locale), [expression, locale]);
 
   return (
     <div className="stagger-children max-w-4xl mx-auto space-y-8">

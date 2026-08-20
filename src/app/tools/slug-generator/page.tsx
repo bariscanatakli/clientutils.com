@@ -26,7 +26,7 @@ export default function SlugGeneratorPage() {
         <ul className="space-y-2 text-muted list-none pl-0">
           <li><strong>Keep it short:</strong> Shorter URLs are easier to copy, paste, and share. They also display fully in Google search results.</li>
           <li><strong>Use dashes (-):</strong> Google explicitly recommends using hyphens (-) instead of underscores (_) to separate words in URLs.</li>
-          <li><strong>Remove Stop Words:</strong> Words like "a", "the", and "and" add length to your URL without adding any SEO value. Our tool can remove these automatically.</li>
+          <li><strong>Remove Stop Words:</strong> Words like &quot;a&quot;, &quot;the&quot;, and &quot;and&quot; add length to your URL without adding any SEO value. Our tool can remove these automatically.</li>
         </ul>
       </div>
     </>

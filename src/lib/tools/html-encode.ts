@@ -11,7 +11,7 @@ export function processHtmlString(input: string, mode: HtmlEncodeMode): string {
     } else {
       return he.decode(input);
     }
-  } catch (err) {
+  } catch {
     return "";
   }
 }

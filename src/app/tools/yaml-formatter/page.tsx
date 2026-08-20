@@ -18,7 +18,7 @@ export default function YamlFormatterPage() {
       <div className="mt-16 mx-auto max-w-5xl pt-8 border-t border-border prose prose-sm dark:prose-invert">
         <h2 className="text-lg font-semibold text-foreground mb-4">Why use a YAML Formatter?</h2>
         <p className="text-muted leading-relaxed mb-6">
-          YAML (YAML Ain't Markup Language) is incredibly popular for configuration files (like Docker Compose, Kubernetes, CI/CD pipelines). 
+          YAML (YAML Ain&apos;t Markup Language) is incredibly popular for configuration files (like Docker Compose, Kubernetes, CI/CD pipelines). 
           However, YAML relies on strict indentation (spaces, not tabs). A single missing or extra space can break an entire deployment.
           Our YAML Formatter instantly validates your syntax, fixes formatting inconsistencies, and ensures your files are structurally sound.
         </p>

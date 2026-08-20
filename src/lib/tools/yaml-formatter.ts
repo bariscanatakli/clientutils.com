@@ -43,11 +43,11 @@ export function formatYaml(input: string, mode: YamlFormatMode, indent: number =
       default:
         return { data: input, isValid: false, error: "Invalid mode" };
     }
-  } catch (err: any) {
+  } catch (error: unknown) {
     return {
       data: "",
       isValid: false,
-      error: err.message || "Geçersiz format"
+      error: error instanceof Error ? error.message : "Geçersiz format"
     };
   }
 }

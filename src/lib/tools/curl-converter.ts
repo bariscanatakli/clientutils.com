@@ -86,7 +86,7 @@ export function convertCurl(curlString: string, target: TargetLanguage): CurlRes
         code += `import fetch from "node-fetch";\n\n`;
       }
       
-      const options: any = { method };
+      const options: Record<string, unknown> = { method };
       if (hasHeaders) options.headers = headers;
       if (data) {
         try {
@@ -100,7 +100,7 @@ export function convertCurl(curlString: string, target: TargetLanguage): CurlRes
 
       let optionsStr = JSON.stringify(options, null, 2);
       // Clean up the JSON.stringify literal injection if body is JSON
-      if (options.body && options.body.startsWith("JSON.stringify")) {
+      if (typeof options.body === "string" && options.body.startsWith("JSON.stringify")) {
         optionsStr = optionsStr.replace(/"JSON\.stringify\(([\s\S]*)\)"/, "JSON.stringify($1)");
       }
 
@@ -112,7 +112,7 @@ export function convertCurl(curlString: string, target: TargetLanguage): CurlRes
     } else if (target === "axios") {
       code += `import axios from "axios";\n\n`;
       
-      const options: any = {
+      const options: Record<string, unknown> = {
         method,
         url
       };
@@ -140,7 +140,7 @@ export function convertCurl(curlString: string, target: TargetLanguage): CurlRes
     }
 
     return { code, error: null };
-  } catch (err: any) {
+  } catch {
     return { code: "", error: "Failed to parse command. Please check syntax." };
   }
 }

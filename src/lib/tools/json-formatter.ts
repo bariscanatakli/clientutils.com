@@ -13,7 +13,7 @@ export function parseJSON(input: string): JsonParseResult {
   try {
     const data = JSON.parse(input);
     return { data, isValid: true, error: null, errorLine: null };
-  } catch (err: any) {
+  } catch (err: unknown) {
     let errorMsg = "Geçersiz JSON formatı";
     let errorLine = null;
 
@@ -44,7 +44,7 @@ export function formatJSON(data: unknown, indent: number | 'tab' = 2): string {
   const space = indent === 'tab' ? '\t' : indent;
   try {
     return JSON.stringify(data, null, space);
-  } catch (err) {
+  } catch {
     return "";
   }
 }

@@ -33,7 +33,7 @@ export function compareText(oldText: string, newText: string, mode: DiffMode): D
       default:
         return Diff.diffLines(oldText, newText);
     }
-  } catch (err) {
+  } catch {
     return [];
   }
 }

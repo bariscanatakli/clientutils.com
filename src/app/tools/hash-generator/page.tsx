@@ -18,7 +18,7 @@ export default function HashGeneratorPage() {
       <div className="mt-16 mx-auto max-w-5xl pt-8 border-t border-border prose prose-sm dark:prose-invert">
         <h2 className="text-lg font-semibold text-foreground mb-4">What is a Cryptographic Hash?</h2>
         <p className="text-muted leading-relaxed mb-6">
-          A cryptographic hash function is a mathematical algorithm that maps data of arbitrary size to a bit array of a fixed size (the "hash"). 
+          A cryptographic hash function is a mathematical algorithm that maps data of arbitrary size to a bit array of a fixed size (the &quot;hash&quot;). 
           It is a one-way function, meaning it is practically impossible to invert the process and retrieve the original data from the hash alone.
         </p>
 
@@ -34,7 +34,7 @@ export default function HashGeneratorPage() {
           </li>
           <li>
             <strong className="text-foreground">bcrypt:</strong> 
-            A password hashing function designed specifically to be computationally expensive to resist brute-force attacks. It automatically handles "salting" (adding random data to the input) to protect against rainbow table attacks.
+            A password hashing function designed specifically to be computationally expensive to resist brute-force attacks. It automatically handles &quot;salting&quot; (adding random data to the input) to protect against rainbow table attacks.
           </li>
         </ul>
       </div>

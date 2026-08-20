@@ -1,6 +1,6 @@
 import cronstrue from "cronstrue";
-import "cronstrue/locales/tr";
-import parser from "cron-parser";
+import "cronstrue/locales/tr.js";
+import { CronExpressionParser } from "cron-parser";
 
 export interface CronParseResult {
   isValid: boolean;
@@ -33,7 +33,7 @@ export function parseCronExpression(
     });
 
     // 2. Get next N runs
-    const interval = parser.parse(trimmed);
+    const interval = CronExpressionParser.parse(trimmed);
     const nextRuns: Date[] = [];
     
     for (let i = 0; i < count; i++) {

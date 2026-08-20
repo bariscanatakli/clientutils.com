@@ -24,7 +24,7 @@ export default function CsvJsonPage() {
 
         <h3 className="text-md font-semibold text-foreground mb-3">Handling Edge Cases</h3>
         <p className="text-muted leading-relaxed mb-6">
-          Writing a custom script to split a string by commas often breaks because CSV files can contain commas <i>inside</i> quoted fields (e.g. <code>"Smith, John"</code>). 
+          Writing a custom script to split a string by commas often breaks because CSV files can contain commas <i>inside</i> quoted fields (e.g. <code>&quot;Smith, John&quot;</code>). 
           Our converter uses a robust, industry-standard CSV parsing engine that correctly handles escaped quotes, internal commas, and multi-line fields.
         </p>
       </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { parseJSON, formatJSON, minifyJSON } from "@/lib/tools/json-formatter";
 import { CopyButton } from "@/components/ui/CopyButton";
 import { JsonTree } from "@/components/ui/JsonTree";

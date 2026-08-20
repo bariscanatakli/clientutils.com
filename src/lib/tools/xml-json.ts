@@ -1,4 +1,4 @@
-import { xml2json, json2xml, Options } from "xml-js";
+import { xml2json, json2xml } from "xml-js";
 
 export interface ConversionResult {
   data: string;

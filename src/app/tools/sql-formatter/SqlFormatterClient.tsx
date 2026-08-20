@@ -32,7 +32,7 @@ export function SqlFormatterClient() {
         <div className="flex flex-wrap items-center gap-2">
           <select 
             value={config.language} 
-            onChange={(e) => setConfig({ ...config, language: e.target.value as any })}
+            onChange={(e) => setConfig({ ...config, language: e.target.value as SqlFormatConfig["language"] })}
             className="text-xs bg-input border border-border rounded-lg px-3 py-2 text-foreground focus:outline-none focus:ring-1 focus:ring-primary transition-all"
           >
             <option value="sql">Standard SQL</option>
@@ -45,7 +45,7 @@ export function SqlFormatterClient() {
 
           <select 
             value={config.keywordCase} 
-            onChange={(e) => setConfig({ ...config, keywordCase: e.target.value as any })}
+            onChange={(e) => setConfig({ ...config, keywordCase: e.target.value as SqlFormatConfig["keywordCase"] })}
             className="text-xs bg-input border border-border rounded-lg px-3 py-2 text-foreground focus:outline-none focus:ring-1 focus:ring-primary transition-all"
           >
             <option value="upper">UPPERCASE Keywords</option>

@@ -9,7 +9,7 @@ export function encodeText(text: string): string {
       binary += String.fromCharCode(bytes[i]);
     }
     return btoa(binary);
-  } catch (err) {
+  } catch {
     return "";
   }
 }
@@ -23,7 +23,7 @@ export function decodeText(base64: string): { text: string; error: string | null
     }
     const decoder = new TextDecoder();
     return { text: decoder.decode(bytes), error: null };
-  } catch (err) {
+  } catch {
     return { text: "", error: "Geçersiz Base64 formatı" };
   }
 }
@@ -47,7 +47,7 @@ export function isValidBase64(input: string): boolean {
   try {
     // Attempt to decode, if it throws, it's not base64
     return btoa(atob(input)) === input || atob(input).length > 0;
-  } catch (err) {
+  } catch {
     return false;
   }
 }

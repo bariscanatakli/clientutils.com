@@ -15,7 +15,7 @@ export function compareJson(oldJsonStr: string, newJsonStr: string): JsonDiffRes
     const newObj = newJsonStr.trim() ? JSON.parse(newJsonStr) : {};
     
     return Diff.diffJson(oldObj, newObj);
-  } catch (err) {
+  } catch {
     // If invalid JSON, fallback to line diff
     return Diff.diffLines(oldJsonStr, newJsonStr);
   }

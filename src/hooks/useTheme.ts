@@ -11,7 +11,8 @@ export function useTheme() {
   useEffect(() => {
     const stored = localStorage.getItem("theme") as Theme | null;
     if (stored) {
-      setThemeState(stored);
+      const timer = window.setTimeout(() => setThemeState(stored), 0);
+      return () => window.clearTimeout(timer);
     }
   }, []);
 

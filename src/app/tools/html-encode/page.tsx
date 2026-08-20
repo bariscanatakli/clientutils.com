@@ -18,9 +18,9 @@ export default function HtmlEncodePage() {
       <div className="mt-16 mx-auto max-w-5xl pt-8 border-t border-border prose prose-sm dark:prose-invert">
         <h2 className="text-lg font-semibold text-foreground mb-4">Why Encode HTML?</h2>
         <p className="text-muted leading-relaxed mb-6">
-          When displaying user-generated content on a website, special characters like <code>&lt;</code>, <code>&gt;</code>, <code>&amp;</code>, and <code>"</code> have specific meanings in HTML. 
+          When displaying user-generated content on a website, special characters like <code>&lt;</code>, <code>&gt;</code>, <code>&amp;</code>, and <code>&quot;</code> have specific meanings in HTML. 
           If a user submits text containing a <code>{"<script>"}</code> tag, the browser might accidentally execute it, leading to Cross-Site Scripting (XSS) vulnerabilities.
-          Encoding converts these dangerous characters into safe "entities" (like <code>&amp;lt;script&amp;gt;</code>), ensuring the browser displays the text visually without executing it as code.
+          Encoding converts these dangerous characters into safe &quot;entities&quot; (like <code>&amp;lt;script&amp;gt;</code>), ensuring the browser displays the text visually without executing it as code.
         </p>
 
         <h3 className="text-md font-semibold text-foreground mb-3">Common Entities</h3>
@@ -50,12 +50,12 @@ export default function HtmlEncodePage() {
                 <td className="py-2">Ampersand</td>
               </tr>
               <tr className="border-b border-border/50">
-                <td className="py-2"><code>"</code></td>
+                <td className="py-2"><code>&quot;</code></td>
                 <td className="py-2"><code>&amp;quot;</code></td>
                 <td className="py-2">Double quote</td>
               </tr>
               <tr>
-                <td className="py-2"><code>'</code></td>
+                <td className="py-2"><code>&apos;</code></td>
                 <td className="py-2"><code>&amp;#39;</code></td>
                 <td className="py-2">Single quote (Apostrophe)</td>
               </tr>

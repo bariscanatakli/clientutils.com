@@ -18,7 +18,7 @@ export default function TomlJsonPage() {
       <div className="mt-16 mx-auto max-w-5xl pt-8 border-t border-border prose prose-sm dark:prose-invert">
         <h2 className="text-lg font-semibold text-foreground mb-4">What is TOML?</h2>
         <p className="text-muted leading-relaxed mb-6">
-          TOML (Tom's Obvious, Minimal Language) is a configuration file format that is easy to read and write. It is designed to map unambiguously to a hash table (dictionary/object). 
+          TOML (Tom&apos;s Obvious, Minimal Language) is a configuration file format that is easy to read and write. It is designed to map unambiguously to a hash table (dictionary/object). 
           It has become extremely popular as the configuration format of choice for modern package managers and toolchains like Rust (Cargo), Python (Poetry), and Go.
         </p>
 

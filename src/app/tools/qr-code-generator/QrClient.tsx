@@ -22,7 +22,7 @@ export default function QrClient() {
   // Styling States
   const [fgColor, setFgColor] = useState("#000000");
   const [bgColor, setBgColor] = useState("#ffffff");
-  const [size, setSize] = useState(256);
+  const size = 256;
   const [level, setLevel] = useState<"L" | "M" | "Q" | "H">("H");
   const [includeMargin, setIncludeMargin] = useState(true);
 

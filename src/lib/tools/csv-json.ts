@@ -26,7 +26,7 @@ export function convertCsvJson(input: string, mode: CsvJsonMode): CsvJsonResult 
       const csv = Papa.unparse(parsedJson);
       return { data: csv, error: null };
     }
-  } catch (err: any) {
-    return { data: "", error: err.message || "Invalid format" };
+  } catch (error: unknown) {
+    return { data: "", error: error instanceof Error ? error.message : "Invalid format" };
   }
 }

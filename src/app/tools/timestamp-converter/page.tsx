@@ -26,7 +26,7 @@ export default function TimestampConverterPage() {
         <h3 className="text-md font-semibold text-foreground mb-3">Seconds vs Milliseconds</h3>
         <p className="text-muted leading-relaxed mb-6">
           Standard Unix timestamps are measured in seconds (typically a 10-digit number). However, modern programming environments (like JavaScript or Java) often use timestamps in milliseconds (a 13-digit number).
-          Our tool automatically detects if you've entered a 10-digit or 13-digit timestamp and converts it appropriately without any configuration needed.
+          Our tool automatically detects if you&apos;ve entered a 10-digit or 13-digit timestamp and converts it appropriately without any configuration needed.
         </p>
       </div>
     </>

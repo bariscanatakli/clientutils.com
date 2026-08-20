@@ -44,7 +44,7 @@ export function Base64EncoderClient() {
     try {
       const uri = await encodeFile(file);
       setFileDataUri(uri);
-    } catch (err) {
+    } catch {
       alert("Dosya okuma hatası.");
     }
   };

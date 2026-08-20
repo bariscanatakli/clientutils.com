@@ -24,7 +24,8 @@ export function buildPageMeta({
   const url = `${SITE_CONFIG.url}${path}`;
 
   return {
-    title: fullTitle,
+    // The root layout title template adds the site name to page titles.
+    title,
     description,
     alternates: {
       canonical: url,

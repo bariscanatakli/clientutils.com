@@ -271,13 +271,13 @@ export const TOOLS: Tool[] = [
   },
   {
     id: "curl-converter",
-    name: "cURL to Fetch Converter",
+    name: "cURL to Axios Converter",
     description:
-      "Instantly convert bash cURL commands into JavaScript Fetch or Axios code. Auto-parses headers and data payloads.",
-    shortDescription: "cURL komutlarını Fetch veya Axios koduna çevir",
+      "Convert cURL commands into Axios or JavaScript Fetch code with headers, JSON bodies, authentication, cookies, and query parameters preserved.",
+    shortDescription: "cURL komutlarını Axios veya Fetch koduna çevir",
     category: "web",
     path: "/tools/curl-converter",
-    seoKeyword: "curl to fetch",
+    seoKeyword: "curl to axios",
     icon: "💻",
     isNew: true,
     isPopular: true,

@@ -10,7 +10,7 @@ Initial evidence comes from Google Search Console data supplied for **18 July–
 
 | Priority | Need cluster and evidence | User intent | Existing coverage | Missing functionality | Missing SEO/content | Status | Validation | Implementing commit |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| P0 | **cURL ↔ Axios** — `curl to axios` (6 impressions), `axios to curl` (2) | Move requests between terminal examples and JavaScript without losing method, headers, auth, query, or body | `/tools/curl-converter` provides basic cURL→Fetch/Axios output | Robust common-flag parsing, actionable validation, paste/sample/download/reset, reverse Axios→cURL, multipart/FormData | Canonical Axios intent, unique metadata/H1, steps, examples, limitations, privacy, structured data, related links | Planned — next | Pending | — |
+| P0 | **cURL ↔ Axios** — `curl to axios` (6 impressions), `axios to curl` (2) | Move requests between terminal examples and JavaScript without losing method, headers, auth, query, or body | `/tools/curl-converter` now provides robust cURL→Axios/Fetch conversion, common flags, validation, sample/paste/copy/download/reset and private browser processing | Reverse Axios→cURL; multipart/FormData input | cURL→Axios canonical intent, metadata/H1, steps, honest limits, privacy, FAQ, structured data and related links are complete | In progress — cURL→Axios complete; Axios→cURL next | Lint, production build, deterministic converter cases and rendered metadata | This commit — `feat: complete cURL to Axios workflow` |
 | P1 | **Tailwind gradients** — `tailwind gradient generator` (3), `tailwind css gradient generator` (2) | Visually compose a gradient and copy valid Tailwind classes | Generic `/tools/css-gradient` exists | Audit Tailwind version syntax, stops, arbitrary values, preview and export workflow | Retarget the existing page to one canonical Tailwind intent; add examples, FAQ and internal links | Planned | Pending | — |
 | P2 | **JSON compress/minify/format** — five variants, 9 total impressions | Move between readable and compact JSON, validate content, and understand size savings | Separate formatter and minifier pages exist | Connect or consolidate workflow; paste/upload/sample, errors, size delta, copy/download/reset | Consolidate synonyms around one canonical intent without thin duplicates | Planned | Pending | — |
 | P3 | **UUID generate/validate** — misspelled `uudi` (3) | Generate UUIDs in batches and validate/version-inspect values | `/tools/uuid-generator` exists | Audit versions, validator, batch controls, copy/download and deterministic messages | Handle the typo naturally in helpful copy/search recovery, never as repeated spam | Planned | Pending | — |
@@ -20,6 +20,16 @@ Initial evidence comes from Google Search Console data supplied for **18 July–
 | P7 | **Line trim/dedupe/sort** — `line tools text trim dedupe sort` (2) | Clean pasted lists in one predictable pass | `/tools/line-sort` exists | Audit trim, blanks, case-sensitive dedupe, stable/natural/numeric sort, stats and export | Present one complete line-cleaning workflow with examples and canonical metadata | Planned | Pending | — |
 
 ## Decision log
+
+### cURL to Axios workflow — first product increment
+
+- **Evidence:** `curl to axios` led the supplied demand set with 6 impressions; the existing parser lost common flags and the page lacked a complete paste-to-export workflow.
+- **Decision:** Strengthen the existing canonical `/tools/curl-converter` page instead of creating a keyword variant. Axios is the default output while Fetch remains available.
+- **Change:** Parse quoted and multiline commands, request methods, headers, JSON/data, GET query data, basic auth, cookies, referrers and user agents. Add actionable errors for unsupported multipart and local-file bodies, plus paste, sample, reset, copy, download, accessible labels, mobile controls and a client-side privacy statement. Add unique metadata, breadcrumbs, structured data, steps, limitations, FAQ and related-tool links.
+- **Validation:** `npm run lint`, `npm run build`, deterministic Axios/Fetch cases, failure cases, and prerendered title/canonical/JSON-LD inspection.
+- **Implementing commit:** This commit — `feat: complete cURL to Axios workflow`.
+- **Remaining gap:** Add reverse Axios→cURL conversion to the same canonical workflow, then consider explicit multipart/FormData support.
+- **Next recommended increment:** Axios→cURL conversion on `/tools/curl-converter`.
 
 ### Validation gate repair
 

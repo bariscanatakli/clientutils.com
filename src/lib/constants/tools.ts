@@ -98,13 +98,13 @@ export const TOOLS: Tool[] = [
   },
   {
     id: "json-formatter",
-    name: "JSON Formatter & Validator",
+    name: "JSON Formatter, Minifier & Validator",
     description:
-      "Format, validate, and beautify JSON data. Error line highlighting, interactive tree view, diff mode, and drag-and-drop file support. Handles large files without freezing.",
-    shortDescription: "JSON formatlama, doğrulama ve ağaç görünümü",
+      "Format, validate, minify, compact, and expand JSON locally. Upload or paste data, inspect line and column errors, compare UTF-8 size, use tree view, and download the result.",
+    shortDescription: "JSON formatla, doğrula, küçült ve ağaçta incele",
     category: "formatters",
     path: "/tools/json-formatter",
-    seoKeyword: "json formatter online",
+    seoKeyword: "json formatter minifier compressor",
     icon: "{ }",
     isPopular: true,
   },
@@ -296,17 +296,6 @@ export const TOOLS: Tool[] = [
   },
 
   // --- PHASE 3: SPRINT 1 (Data & Text) ---
-  {
-    id: "json-minifier",
-    name: "JSON Minifier",
-    description: "Compress JSON data by removing spaces, newlines, and unnecessary formatting to reduce payload sizes.",
-    shortDescription: "JSON verisini tek satıra sıkıştır",
-    category: "formatters",
-    path: "/tools/json-minifier",
-    seoKeyword: "json minifier online",
-    icon: "🗜️",
-    isNew: true,
-  },
   {
     id: "json-escape",
     name: "JSON Escape / Unescape",

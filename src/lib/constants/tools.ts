@@ -376,12 +376,12 @@ export const TOOLS: Tool[] = [
   // --- SPRINT 2: BATCH 1 (Generators) ---
   {
     id: "password-generator",
-    name: "Password Generator",
-    description: "Generate secure, random passwords. Customize length, uppercase, lowercase, numbers, and symbols. Cryptographically secure client-side generation.",
-    shortDescription: "Kriptografik olarak güvenli, özelleştirilebilir şifre üretici",
+    name: "Secure Password & Passphrase Generator",
+    description: "Generate unbiased random passwords or readable compound-word passphrases in batches, with guaranteed character classes and honest entropy estimates.",
+    shortDescription: "Tarafsız rastgele parola ve okunabilir passphrase üret",
     category: "generators",
     path: "/tools/password-generator",
-    seoKeyword: "strong password generator",
+    seoKeyword: "secure password passphrase generator",
     icon: "🔑",
     isNew: true,
   },

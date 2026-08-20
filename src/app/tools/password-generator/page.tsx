@@ -1,27 +1,32 @@
-import { buildPageMeta } from "@/lib/constants/seo";
-import { getToolByPath } from "@/lib/constants/tools";
+import type { Metadata } from "next";
+import Link from "next/link";
+import { SITE_CONFIG, buildPageMeta } from "@/lib/constants/seo";
 import PasswordGeneratorClient from "./PasswordGeneratorClient";
 
-const tool = getToolByPath("/tools/password-generator");
-
-export const metadata = tool
-  ? buildPageMeta({
-      title: tool.name,
-      description: tool.description,
-      path: tool.path,
-    })
-  : {};
+const path = "/tools/password-generator";
+const description = "Generate unbiased random passwords or readable compound-word passphrases in batches, with guaranteed character classes and honest entropy estimates.";
+export const metadata: Metadata = buildPageMeta({ title: "Secure Password & Passphrase Generator — Unbiased Randomness", description, path });
+const structuredData = { "@context": "https://schema.org", "@type": "WebApplication", name: "Secure Password and Passphrase Generator", url: `${SITE_CONFIG.url}${path}`, description, applicationCategory: "SecurityApplication", operatingSystem: "Any", browserRequirements: "Requires JavaScript and Web Crypto", offers: { "@type": "Offer", price: "0", priceCurrency: "USD" } };
 
 export default function PasswordGeneratorPage() {
-  if (!tool) return <div>Tool not found</div>;
+  return <>
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, "\\u003c") }} />
+    <nav aria-label="Breadcrumb" className="mx-auto mb-5 max-w-6xl text-sm text-muted"><Link className="hover:text-foreground" href="/">Home</Link><span aria-hidden="true"> / </span><Link className="hover:text-foreground" href="/tools">Developer tools</Link><span aria-hidden="true"> / </span><span aria-current="page">Password Generator</span></nav>
+    <PasswordGeneratorClient />
+    <div className="mx-auto mt-16 max-w-5xl border-t border-border pt-8 text-muted">
+      <section><h2 className="mb-3 text-xl font-semibold text-foreground">Generate a password that matches the real requirement</h2><ol className="list-decimal space-y-2 pl-5 leading-relaxed"><li>Choose random characters for maximum compatibility or compound-word passphrases when manual entry and recall matter.</li><li>Set length, quantity and allowed character classes. Optional ambiguity and exclusion filters help with restrictive systems.</li><li>Generate a fresh batch, review the per-value entropy estimate, then copy one value or download the batch.</li><li>Store each password in a password manager and use it for only one account. Enable multi-factor authentication wherever possible.</li></ol></section>
 
-  return (
-    <div className="mx-auto max-w-4xl space-y-8">
-      <header className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">{tool.name}</h1>
-        <p className="text-lg text-muted-foreground">{tool.description}</p>
-      </header>
-      <PasswordGeneratorClient />
+      <section className="mt-10"><h2 className="mb-3 text-xl font-semibold text-foreground">How unbiased generation works</h2><div className="grid gap-4 sm:grid-cols-2"><Info title="Cryptographic random source">The browser Web Crypto generator supplies unpredictable 32-bit values. ClientUtils does not use <code>Math.random()</code> for passwords.</Info><Info title="No modulo bias">Values outside the largest evenly divisible range are discarded before selection. This keeps every character or word-list index equally likely.</Info><Info title="Guaranteed classes">Character passwords are sampled uniformly and rejected until every selected class appears. A checked box therefore represents a real output constraint.</Info><Info title="Exact constraint estimate">Entropy is calculated from the number of strings that satisfy all selected classes after exclusions, not simply from length multiplied by the original pool size.</Info></div></section>
+
+      <section className="mt-10"><h2 className="mb-3 text-xl font-semibold text-foreground">Random passwords versus passphrases</h2><p className="leading-relaxed">Random character strings are compact and work well with password managers. Passphrases are longer and easier to transcribe, but their security depends on independently selecting from a known-size list—not on choosing a familiar quotation. This generator builds each compound from 16 adjectives and 16 nouns, giving 256 equally likely combinations or 8 bits per compound.</p><p className="mt-4 leading-relaxed">Capitalization and separators improve compatibility or readability but add no entropy because they are chosen settings. The optional two-digit suffix contributes about 6.6 bits because it has 100 equally likely values.</p></section>
+
+      <section className="mt-10"><h2 className="mb-3 text-xl font-semibold text-foreground">Security limits and practical guidance</h2><div className="rounded-xl border border-warning/30 bg-warning/5 p-4"><h3 className="font-semibold text-foreground">An entropy estimate is not an account-security guarantee</h3><p className="mt-2 leading-relaxed">It assumes an attacker knows the generation method but not the random choices. Phishing, malware, password reuse, insecure recovery, server breaches and weak password hashing can bypass a strong generated value.</p></div><p className="mt-4 leading-relaxed">Generation happens in browser memory and nothing is uploaded or intentionally persisted. Other software on the device, clipboard history, browser extensions and downloaded files can still expose secrets. Generate on a trusted, updated device; save directly to a reputable password manager; and delete plaintext export files after import.</p></section>
+
+      <section className="mt-10"><h2 className="mb-3 text-xl font-semibold text-foreground">Frequently asked questions</h2><div className="space-y-5"><Info title="Why did I not get a selected character type before?">A naive generator can draw from a combined pool and happen to omit a class. This workflow rejects such candidates, so every enabled class appears at least once.</Info><Info title="What length should I choose?">Follow the service&apos;s documented maximum and allowed characters. For new random passwords, the 20-character preset offers a strong margin; use longer values when the system permits.</Info><Info title="Are passphrases automatically easier to remember?">They are more readable than arbitrary symbols, but the generated compounds may still be unfamiliar. Do not replace them with a quote, lyric or personal phrase, because predictability reduces security.</Info><Info title="Why can batches contain duplicates?">Each value is an independent random sample. Duplicate suppression would make later outputs depend on earlier ones and can obscure the generation model. With suitable entropy, collisions are already extremely unlikely.</Info></div></section>
+
+      <section className="mt-10"><h2 className="mb-3 text-xl font-semibold text-foreground">Related security tools</h2><div className="flex flex-wrap gap-3"><Link className="rounded-lg border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground hover:bg-card-hover" href="/tools/hash-generator">Hash &amp; Checksum Tool</Link><Link className="rounded-lg border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground hover:bg-card-hover" href="/tools/bcrypt-generator">Bcrypt Generator &amp; Checker</Link><Link className="rounded-lg border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground hover:bg-card-hover" href="/tools/uuid-generator">UUID Generator</Link></div></section>
     </div>
-  );
+  </>;
 }
+
+function Info({ title, children }: { title: string; children: React.ReactNode }) { return <div className="rounded-xl border border-border bg-card p-4"><h3 className="font-semibold text-foreground">{title}</h3><p className="mt-2 text-sm leading-relaxed">{children}</p></div>; }

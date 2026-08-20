@@ -4,14 +4,14 @@ import { SITE_CONFIG, buildPageMeta } from "@/lib/constants/seo";
 import { CurlConverterClient } from "./CurlConverterClient";
 
 const path = "/tools/curl-converter";
-const description = "Convert cURL commands to Axios or JavaScript Fetch code with headers, JSON bodies, query parameters, cookies, and authentication preserved.";
+const description = "Convert cURL to Axios or Axios to cURL locally, preserving methods, headers, JSON bodies, query parameters, cookies, and basic authentication.";
 
-export const metadata: Metadata = buildPageMeta({ title: "cURL to Axios Converter", description, path });
+export const metadata: Metadata = buildPageMeta({ title: "cURL to Axios & Axios to cURL Converter", description, path });
 
 const structuredData = {
   "@context": "https://schema.org",
   "@type": "WebApplication",
-  name: "cURL to Axios Converter",
+  name: "cURL to Axios and Axios to cURL Converter",
   url: `${SITE_CONFIG.url}${path}`,
   description,
   applicationCategory: "DeveloperApplication",
@@ -44,9 +44,18 @@ export default function CurlConverterPage() {
         </section>
 
         <section className="mt-10">
+          <h2 className="mb-3 text-xl font-semibold text-foreground">How to convert Axios to cURL</h2>
+          <ol className="list-decimal space-y-2 pl-5 leading-relaxed">
+            <li>Select Axios → cURL and paste an Axios config call or an <code>axios.get</code>, <code>post</code>, <code>put</code>, <code>patch</code>, <code>delete</code>, <code>head</code>, or <code>options</code> call.</li>
+            <li>Use literal values for the URL, headers, params, auth, and data so the converter can inspect them without executing JavaScript.</li>
+            <li>Review the generated shell-safe cURL command, then copy it or download the <code>.sh</code> file.</li>
+          </ol>
+        </section>
+
+        <section className="mt-10">
           <h2 className="mb-3 text-xl font-semibold text-foreground">What the converter preserves</h2>
           <p className="leading-relaxed">The parser understands common options including <code>-X</code>/<code>--request</code>, <code>-H</code>/<code>--header</code>, data variants, <code>--json</code>, <code>-G</code>/<code>--get</code>, <code>-u</code>/<code>--user</code>, cookies, referrers, and user agents. Quoted and multiline commands are supported. JSON bodies become JavaScript objects in Axios output; non-JSON bodies stay strings.</p>
-          <p className="mt-4 leading-relaxed"><strong className="text-foreground">Known limit:</strong> multipart uploads and local <code>@file</code> bodies require browser File/FormData handling and are deliberately rejected with an actionable message instead of producing misleading code.</p>
+          <p className="mt-4 leading-relaxed"><strong className="text-foreground">Known limits:</strong> multipart uploads and local <code>@file</code> bodies require browser File/FormData handling. Axios variables, spread properties, functions, computed expressions, and template interpolation cannot be resolved safely without executing code. These inputs are rejected with an actionable message instead of producing misleading output.</p>
         </section>
 
         <section className="mt-10">
@@ -55,6 +64,7 @@ export default function CurlConverterPage() {
             <div><h3 className="font-semibold text-foreground">Does this execute my cURL request?</h3><p className="mt-1 leading-relaxed">No. It only parses the command and generates code locally in your browser.</p></div>
             <div><h3 className="font-semibold text-foreground">Are API keys uploaded?</h3><p className="mt-1 leading-relaxed">No. Input remains in the page and is not sent to a server. You should still avoid sharing generated code that contains live credentials.</p></div>
             <div><h3 className="font-semibold text-foreground">Why does Axios use an options object?</h3><p className="mt-1 leading-relaxed">A single options object keeps the HTTP method, URL, headers, authentication, and data explicit and easy to audit.</p></div>
+            <div><h3 className="font-semibold text-foreground">Does Axios to cURL run my JavaScript?</h3><p className="mt-1 leading-relaxed">No. A restricted literal parser reads supported request fields. It never uses <code>eval</code> and never executes imports, functions, or expressions.</p></div>
           </div>
         </section>
 

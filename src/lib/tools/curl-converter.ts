@@ -265,3 +265,278 @@ export function convertCurl(command: string, target: TargetLanguage): CurlResult
     return { code: "", error: error instanceof Error ? error.message : "Unable to parse this cURL command." };
   }
 }
+
+type Literal = string | number | boolean | null | Literal[] | { [key: string]: Literal };
+
+function isLiteralObject(value: Literal | undefined): value is { [key: string]: Literal } {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+class AxiosLiteralParser {
+  private index = 0;
+  private readonly source: string;
+
+  constructor(source: string) {
+    this.source = source;
+  }
+
+  parseArguments(): Literal[] {
+    const values: Literal[] = [];
+    this.skipWhitespace();
+    if (this.index === this.source.length) return values;
+    while (this.index < this.source.length) {
+      values.push(this.parseValue());
+      this.skipWhitespace();
+      if (this.source[this.index] !== ",") break;
+      this.index += 1;
+      this.skipWhitespace();
+    }
+    this.skipWhitespace();
+    if (this.index !== this.source.length) this.fail("Only literal Axios arguments are supported");
+    return values;
+  }
+
+  private parseValue(): Literal {
+    this.skipWhitespace();
+    const character = this.source[this.index];
+    if (character === '"' || character === "'" || character === "`") return this.parseString(character);
+    if (character === "{") return this.parseObject();
+    if (character === "[") return this.parseArray();
+    if (this.source.startsWith("true", this.index)) return this.consumeKeyword("true", true);
+    if (this.source.startsWith("false", this.index)) return this.consumeKeyword("false", false);
+    if (this.source.startsWith("null", this.index)) return this.consumeKeyword("null", null);
+
+    const number = this.source.slice(this.index).match(/^-?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?/i)?.[0];
+    if (number) {
+      this.index += number.length;
+      return Number(number);
+    }
+    this.fail("Variables, functions, spreads, and computed expressions cannot be converted safely");
+  }
+
+  private parseString(quote: string): string {
+    this.index += 1;
+    let value = "";
+    while (this.index < this.source.length) {
+      const character = this.source[this.index];
+      this.index += 1;
+      if (character === quote) return value;
+      if (quote === "`" && character === "$" && this.source[this.index] === "{") {
+        this.fail("Template literal interpolation is not supported; replace it with a concrete value");
+      }
+      if (character !== "\\") {
+        value += character;
+        continue;
+      }
+      if (this.index >= this.source.length) this.fail("Unterminated escape sequence");
+      const escaped = this.source[this.index];
+      this.index += 1;
+      const escapes: Record<string, string> = { n: "\n", r: "\r", t: "\t", b: "\b", f: "\f", v: "\v", "0": "\0" };
+      if (escaped === "u" || escaped === "x") {
+        const length = escaped === "u" ? 4 : 2;
+        const hex = this.source.slice(this.index, this.index + length);
+        if (!new RegExp(`^[0-9a-fA-F]{${length}}$`).test(hex)) this.fail("Invalid hexadecimal string escape");
+        value += String.fromCharCode(Number.parseInt(hex, 16));
+        this.index += length;
+      } else {
+        value += escapes[escaped] ?? escaped;
+      }
+    }
+    this.fail("Unterminated string literal");
+  }
+
+  private parseObject(): { [key: string]: Literal } {
+    const result: { [key: string]: Literal } = {};
+    this.index += 1;
+    this.skipWhitespace();
+    while (this.source[this.index] !== "}") {
+      if (this.index >= this.source.length) this.fail("Unterminated object literal");
+      const keyCharacter = this.source[this.index];
+      let key: string;
+      if (keyCharacter === '"' || keyCharacter === "'") {
+        key = this.parseString(keyCharacter);
+      } else {
+        const match = this.source.slice(this.index).match(/^[A-Za-z_$][\w$-]*/)?.[0];
+        if (!match) this.fail("Object keys must be plain identifiers or strings");
+        key = match;
+        this.index += match.length;
+      }
+      this.skipWhitespace();
+      if (this.source[this.index] !== ":") this.fail(`Expected a colon after ${key}`);
+      this.index += 1;
+      result[key] = this.parseValue();
+      this.skipWhitespace();
+      if (this.source[this.index] === ",") {
+        this.index += 1;
+        this.skipWhitespace();
+        if (this.source[this.index] === "}") break;
+      } else if (this.source[this.index] !== "}") {
+        this.fail("Expected a comma between object properties");
+      }
+    }
+    this.index += 1;
+    return result;
+  }
+
+  private parseArray(): Literal[] {
+    const result: Literal[] = [];
+    this.index += 1;
+    this.skipWhitespace();
+    while (this.source[this.index] !== "]") {
+      if (this.index >= this.source.length) this.fail("Unterminated array literal");
+      result.push(this.parseValue());
+      this.skipWhitespace();
+      if (this.source[this.index] === ",") {
+        this.index += 1;
+        this.skipWhitespace();
+        if (this.source[this.index] === "]") break;
+      } else if (this.source[this.index] !== "]") {
+        this.fail("Expected a comma between array items");
+      }
+    }
+    this.index += 1;
+    return result;
+  }
+
+  private consumeKeyword<T extends boolean | null>(keyword: string, value: T): T {
+    this.index += keyword.length;
+    return value;
+  }
+
+  private skipWhitespace() {
+    while (/\s/.test(this.source[this.index] ?? "")) this.index += 1;
+  }
+
+  private fail(message: string): never {
+    throw new Error(`${message} near character ${this.index + 1}.`);
+  }
+}
+
+function axiosCall(source: string): { method?: string; argumentsSource: string } {
+  const match = /\baxios(?:\.(get|post|put|patch|delete|head|options|request))?\s*\(/i.exec(source);
+  if (!match) throw new Error("Add an axios(...), axios.request(...), or axios.get/post/... call.");
+  const start = match.index + match[0].length;
+  let quote: string | null = null;
+  let escaped = false;
+  let depth = 1;
+
+  for (let index = start; index < source.length; index += 1) {
+    const character = source[index];
+    if (escaped) {
+      escaped = false;
+      continue;
+    }
+    if (character === "\\" && quote) {
+      escaped = true;
+      continue;
+    }
+    if (quote) {
+      if (character === quote) quote = null;
+      continue;
+    }
+    if (character === '"' || character === "'" || character === "`") quote = character;
+    else if (character === "(") depth += 1;
+    else if (character === ")") {
+      depth -= 1;
+      if (depth === 0) return { method: match[1]?.toUpperCase(), argumentsSource: source.slice(start, index) };
+    }
+  }
+  throw new Error("The Axios call has an unmatched parenthesis.");
+}
+
+function textValue(value: Literal | undefined, field: string): string | undefined {
+  if (value === undefined) return undefined;
+  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") return String(value);
+  throw new Error(`${field} must be a literal string, number, or boolean.`);
+}
+
+function shellQuote(value: string): string {
+  return `'${value.replace(/'/g, `'\\''`)}'`;
+}
+
+function requestFromAxios(source: string): ParsedCurl {
+  const call = axiosCall(source);
+  const args = new AxiosLiteralParser(call.argumentsSource).parseArguments();
+  let config: { [key: string]: Literal } = {};
+  let data: Literal | undefined;
+  let url: string | undefined;
+
+  if (call.method && call.method !== "REQUEST") {
+    url = textValue(args[0], "URL");
+    if (["POST", "PUT", "PATCH"].includes(call.method)) {
+      data = args[1];
+      if (isLiteralObject(args[2])) config = args[2];
+    } else if (isLiteralObject(args[1])) config = args[1];
+  } else if (isLiteralObject(args[0])) {
+    config = args[0];
+  } else {
+    url = textValue(args[0], "URL");
+    if (isLiteralObject(args[1])) config = args[1];
+  }
+
+  url ??= textValue(config.url, "config.url");
+  const baseUrl = textValue(config.baseURL, "config.baseURL");
+  if (url && baseUrl && !/^https?:\/\//i.test(url)) url = new URL(url, baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`).toString();
+  if (!url) throw new Error("Add a literal URL as the first argument or config.url.");
+  if (!/^https?:\/\//i.test(url)) throw new Error("Use a complete http:// or https:// URL, or provide config.baseURL.");
+
+  if (isLiteralObject(config.params)) {
+    const parsedUrl = new URL(url);
+    for (const [key, value] of Object.entries(config.params)) {
+      const values = Array.isArray(value) ? value : [value];
+      for (const item of values) {
+        const text = textValue(item, `params.${key}`);
+        if (text !== undefined) parsedUrl.searchParams.append(key, text);
+      }
+    }
+    url = parsedUrl.toString();
+  } else if (config.params !== undefined) {
+    throw new Error("config.params must be a literal object.");
+  }
+
+  const headers: Record<string, string> = {};
+  if (isLiteralObject(config.headers)) {
+    for (const [name, value] of Object.entries(config.headers)) {
+      const text = textValue(value, `headers.${name}`);
+      if (text !== undefined) headers[name] = text;
+    }
+  } else if (config.headers !== undefined) {
+    throw new Error("config.headers must be a literal object.");
+  }
+
+  let auth: ParsedCurl["auth"];
+  if (isLiteralObject(config.auth)) {
+    const username = textValue(config.auth.username, "auth.username");
+    const password = textValue(config.auth.password, "auth.password");
+    if (username === undefined) throw new Error("auth.username is required when auth is present.");
+    auth = { username, password: password ?? "" };
+  } else if (config.auth !== undefined) {
+    throw new Error("config.auth must be a literal object.");
+  }
+
+  data ??= config.data;
+  const method = call.method && call.method !== "REQUEST" ? call.method : textValue(config.method, "config.method")?.toUpperCase() ?? (data === undefined ? "GET" : "POST");
+  return { url, method, headers, data: data === undefined ? undefined : typeof data === "string" ? data : JSON.stringify(data), auth };
+}
+
+function toCurl(request: ParsedCurl): string {
+  const parts = [`curl --request ${request.method} ${shellQuote(request.url)}`];
+  for (const [name, value] of Object.entries(request.headers)) parts.push(`--header ${shellQuote(`${name}: ${value}`)}`);
+  if (request.auth) parts.push(`--user ${shellQuote(`${request.auth.username}:${request.auth.password}`)}`);
+  if (request.data !== undefined) {
+    if (!Object.keys(request.headers).some((name) => name.toLowerCase() === "content-type") && /^[\[{]/.test(request.data.trim())) {
+      parts.push(`--header ${shellQuote("Content-Type: application/json")}`);
+    }
+    parts.push(`--data-raw ${shellQuote(request.data)}`);
+  }
+  return parts.join(" \\\n  ");
+}
+
+export function convertAxiosToCurl(source: string): CurlResult {
+  if (!source.trim()) return { code: "" };
+  try {
+    return { code: toCurl(requestFromAxios(source)) };
+  } catch (error) {
+    return { code: "", error: error instanceof Error ? error.message : "Unable to parse this Axios call." };
+  }
+}

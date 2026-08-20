@@ -2,12 +2,26 @@
 
 import { useMemo, useState } from "react";
 import { CopyButton } from "@/components/ui/CopyButton";
-import { convertCurl, type TargetLanguage } from "@/lib/tools/curl-converter";
+import { convertAxiosToCurl, convertCurl, type TargetLanguage } from "@/lib/tools/curl-converter";
 
 const SAMPLE_CURL = `curl --request POST "https://api.example.com/v1/users" \\
   --header "Authorization: Bearer YOUR_TOKEN" \\
   --header "Content-Type: application/json" \\
   --data '{"name":"Jane Doe","email":"jane@example.com"}'`;
+
+const SAMPLE_AXIOS = `import axios from "axios";
+
+const response = await axios({
+  method: "POST",
+  url: "https://api.example.com/v1/users",
+  headers: {
+    Authorization: "Bearer YOUR_TOKEN",
+    "Content-Type": "application/json"
+  },
+  data: { name: "Jane Doe", email: "jane@example.com" }
+});`;
+
+type Direction = "curl-to-code" | "axios-to-curl";
 
 const TARGETS: { value: TargetLanguage; label: string }[] = [
   { value: "axios", label: "Axios" },
@@ -16,10 +30,20 @@ const TARGETS: { value: TargetLanguage; label: string }[] = [
 ];
 
 export function CurlConverterClient() {
+  const [direction, setDirection] = useState<Direction>("curl-to-code");
   const [input, setInput] = useState(SAMPLE_CURL);
   const [target, setTarget] = useState<TargetLanguage>("axios");
   const [clipboardError, setClipboardError] = useState("");
-  const result = useMemo(() => convertCurl(input, target), [input, target]);
+  const result = useMemo(
+    () => direction === "curl-to-code" ? convertCurl(input, target) : convertAxiosToCurl(input),
+    [direction, input, target],
+  );
+
+  function changeDirection(nextDirection: Direction) {
+    setDirection(nextDirection);
+    setInput(nextDirection === "curl-to-code" ? SAMPLE_CURL : SAMPLE_AXIOS);
+    setClipboardError("");
+  }
 
   async function pasteInput() {
     try {
@@ -35,7 +59,7 @@ export function CurlConverterClient() {
     const url = URL.createObjectURL(new Blob([result.code], { type: "text/javascript;charset=utf-8" }));
     const anchor = document.createElement("a");
     anchor.href = url;
-    anchor.download = `curl-${target}.js`;
+    anchor.download = direction === "curl-to-code" ? `curl-${target}.js` : "axios-request.sh";
     anchor.click();
     URL.revokeObjectURL(url);
   }
@@ -44,12 +68,16 @@ export function CurlConverterClient() {
     <div className="stagger-children mx-auto max-w-[1400px] space-y-6">
       <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-end">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">cURL to Axios Converter</h1>
-          <p className="mt-2 text-sm text-muted">Convert cURL into readable Axios or Fetch code without sending the request anywhere.</p>
+          <h1 className="text-2xl font-bold text-foreground">cURL ↔ Axios Converter</h1>
+          <p className="mt-2 text-sm text-muted">Convert requests between cURL and Axios without executing or uploading them.</p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <div aria-label="Output format" className="flex max-w-full overflow-x-auto rounded-lg border border-border bg-input p-1" role="group">
+          <div aria-label="Conversion direction" className="flex rounded-lg border border-border bg-input p-1" role="group">
+            <button aria-pressed={direction === "curl-to-code"} className={`rounded-md px-3 py-2 text-sm font-semibold ${direction === "curl-to-code" ? "bg-card text-foreground shadow-sm" : "text-muted hover:text-foreground"}`} onClick={() => changeDirection("curl-to-code")} type="button">cURL → Code</button>
+            <button aria-pressed={direction === "axios-to-curl"} className={`rounded-md px-3 py-2 text-sm font-semibold ${direction === "axios-to-curl" ? "bg-card text-foreground shadow-sm" : "text-muted hover:text-foreground"}`} onClick={() => changeDirection("axios-to-curl")} type="button">Axios → cURL</button>
+          </div>
+          {direction === "curl-to-code" && <div aria-label="Output format" className="flex max-w-full overflow-x-auto rounded-lg border border-border bg-input p-1" role="group">
             {TARGETS.map((option) => (
               <button
                 aria-pressed={target === option.value}
@@ -61,9 +89,9 @@ export function CurlConverterClient() {
                 {option.label}
               </button>
             ))}
-          </div>
+          </div>}
           <button className="rounded-lg border border-border bg-card px-3 py-2 text-xs font-semibold text-foreground hover:bg-card-hover" onClick={pasteInput} type="button">Paste</button>
-          <button className="rounded-lg border border-border bg-card px-3 py-2 text-xs font-semibold text-foreground hover:bg-card-hover" onClick={() => setInput(SAMPLE_CURL)} type="button">Load sample</button>
+          <button className="rounded-lg border border-border bg-card px-3 py-2 text-xs font-semibold text-foreground hover:bg-card-hover" onClick={() => setInput(direction === "curl-to-code" ? SAMPLE_CURL : SAMPLE_AXIOS)} type="button">Load sample</button>
           <button className="rounded-lg border border-border bg-card px-3 py-2 text-xs font-semibold text-foreground hover:bg-card-hover" onClick={() => setInput("")} type="button">Clear</button>
         </div>
       </div>
@@ -73,18 +101,18 @@ export function CurlConverterClient() {
       <div className="flex flex-col gap-6 lg:grid lg:h-[520px] lg:grid-cols-2">
         <section className="relative flex h-[330px] flex-col overflow-hidden rounded-xl border border-border bg-code-bg lg:h-full" aria-labelledby="curl-input-label">
           <div className="flex items-center justify-between border-b border-border bg-sidebar px-4 py-2">
-            <label className="text-xs font-mono text-muted" htmlFor="curl-input" id="curl-input-label">Bash cURL command</label>
+            <label className="text-xs font-mono text-muted" htmlFor="curl-input" id="curl-input-label">{direction === "curl-to-code" ? "Bash cURL command" : "Axios request"}</label>
           </div>
-          <textarea aria-describedby="curl-input-help" className="flex-1 resize-none bg-transparent p-4 font-mono text-sm leading-relaxed text-code-foreground outline-none" id="curl-input" onChange={(event) => setInput(event.target.value)} placeholder="Paste a cURL command here..." spellCheck={false} value={input} />
-          <span className="sr-only" id="curl-input-help">Supports request methods, headers, JSON and form bodies, query parameters, cookies, and basic authentication.</span>
+          <textarea aria-describedby="curl-input-help" className="flex-1 resize-none bg-transparent p-4 font-mono text-sm leading-relaxed text-code-foreground outline-none" id="curl-input" onChange={(event) => setInput(event.target.value)} placeholder={direction === "curl-to-code" ? "Paste a cURL command here..." : "Paste an Axios call here..."} spellCheck={false} value={input} />
+          <span className="sr-only" id="curl-input-help">{direction === "curl-to-code" ? "Supports request methods, headers, JSON and form bodies, query parameters, cookies, and basic authentication." : "Supports literal Axios config objects and Axios get, post, put, patch, delete, head, and options calls."}</span>
           {result.error && input && <div className="border-t border-danger/20 bg-danger/10 px-4 py-2 text-xs text-danger" role="alert">{result.error}</div>}
         </section>
 
         <section className="flex h-[330px] flex-col overflow-hidden rounded-xl border border-border bg-code-bg lg:h-full" aria-labelledby="generated-code-label">
           <div className="flex items-center justify-between gap-2 border-b border-border bg-sidebar px-4 py-2">
-            <label className="text-xs font-mono capitalize text-muted" htmlFor="generated-code" id="generated-code-label">{target.replace("-", " ")} code</label>
+            <label className="text-xs font-mono capitalize text-muted" htmlFor="generated-code" id="generated-code-label">{direction === "curl-to-code" ? `${target.replace("-", " ")} code` : "Bash cURL command"}</label>
             <div className="flex items-center gap-2">
-              <button className="rounded-md px-2 py-1 text-xs font-semibold text-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50" disabled={!result.code} onClick={downloadCode} type="button">Download .js</button>
+              <button className="rounded-md px-2 py-1 text-xs font-semibold text-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50" disabled={!result.code} onClick={downloadCode} type="button">Download {direction === "curl-to-code" ? ".js" : ".sh"}</button>
               <CopyButton label="Copy code" size="sm" text={result.code} />
             </div>
           </div>
@@ -92,7 +120,7 @@ export function CurlConverterClient() {
         </section>
       </div>
 
-      <p className="text-xs text-muted">Privacy: parsing and code generation run entirely in your browser. Commands, URLs, tokens, and request bodies are not uploaded.</p>
+      <p className="text-xs text-muted">Privacy: parsing and code generation run entirely in your browser. Code, URLs, tokens, and request bodies are not uploaded or executed.</p>
     </div>
   );
 }
